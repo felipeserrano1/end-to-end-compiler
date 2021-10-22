@@ -1,0 +1,201 @@
+programa
+// ------ DECLARACIONES ------ //
+    ULONG a, o;
+    DOUBLE bb;
+    ULONG _cc1;
+    ULONG dd_2;
+    ee; // Falta tipo //
+    ULONG identificiadorMuyLargo_123456;  // Debe truncar en - //
+    FUNC x;
+
+// ------ PROBAMOS FUNCIONES ------ //
+
+    ULONG FUNC suma(DOUBLE i)
+        ULONG j;
+        BEGIN
+            y := 10;
+            RETURN (j);
+        END;
+
+    ULONG FUNC suma(DOUBLE i) // Falta ; //
+        ULONG j;
+        BEGIN
+            y := 10;
+            RETURN (j);
+        END
+
+    ULONG FUNC suma(DOUBLE i) // Falta END //
+        ULONG j;
+        BEGIN
+            y := 10;
+            RETURN (j);
+        ;
+
+    ULONG FUNC suma(DOUBLE i)
+        ULONG j;
+        BEGIN
+            y := 10;
+            RETURN (j);
+            POST:(y > 10);
+        END;
+
+    ULONG FUNC suma(DOUBLE i)  // post en miniscula, deberia faltar POST //
+        ULONG j;
+        BEGIN
+             y := 10;
+             RETURN (j);
+             post:(y > 10);
+        END;
+
+    BEGIN
+// ------ PROBAMOS IF ------ //
+        IF (y < 10 && y > 5 || x == 20) THEN
+            ULONG j;
+            BEGIN
+                x := 10;
+            END;
+        ENDIF;
+
+        IF (y < 10 && y > 5) THEN
+            ULONG j;
+            BEGIN
+                x := 10;
+                y := 20;
+            END;
+        ELSE
+            x := 20;
+        ENDIF;
+
+        IF (y & x) THEN // ERROR LEXICO NO SE PUEDE AGREGAR & //
+            ULONG j;
+            BEGIN
+                x := 10;
+            END;
+        ENDIF;
+
+        (y < 10) THEN // FALTA IF //
+            ULONG j;
+                 BEGIN
+                      x := 10;
+                 END;
+        ENDIF;
+
+        IF (y < 10)  // FALTA THEN //
+            ULONG j;
+            BEGIN
+                x := 10;
+            END;
+        ENDIF;
+
+        IF (y < 10) THEN // FALTA ENDIF //
+            ULONG j;
+            BEGIN
+                x := 10;
+            END;
+        ;
+
+
+        IF y < 10) THEN // FALTA ( //
+            ULONG j;
+            BEGIN
+                x := 10;
+            END;
+        ENDIF;
+
+// ------ PROBAMOS PRINT ------ //
+
+        PRINT(%hola%);
+        PRINT (%hola%; // FALTA ) //
+        PRINT(hola); // FALTA CADENA //
+        PRINT(%hola%) // FALTA ; //
+
+// ------ PROBAMOS WHILE ------ //
+
+        WHILE (y < 10) DO
+            ULONG y;
+            BEGIN
+                y := y + 10;
+            END;
+
+        WHILE y < 10) DO // FALTA ( EN WHILE //
+            ULONG y;
+            BEGIN
+                y :=  Y + 10;
+            END;
+
+        WHILE (y < 10) // FALTA DO EN WHILE //
+            ULONG y;
+            BEGIN
+                y := y + 10;
+            END;
+
+        (y < 10) DO // FALTA WHILE //
+            ULONG y;
+            BEGIN
+                y := y + 10;
+            END;
+
+// ------ PROBAMOS TRY CATCH ------ //
+
+        TRY
+            x := 10;
+        CATCH
+            BEGIN
+                y := 10;
+                z := 10;
+             END;
+
+        TRY  // Falta CATCH //
+            x := 10;
+        BEGIN
+            y := 10;
+            z := 10;
+        END;
+
+        TRY  // Falta BEGIN //
+            x := 10;
+        CATCH
+            y := 10;
+            z := 10;
+        END;
+
+        TRY  // Falta END //
+            x := 10;
+        CATCH
+            BEGIN
+                y := 10;
+                z := 10;
+            ;
+
+        TRY // Falta ; //
+            x := 10;
+        CATCH
+             BEGIN
+               y := 10;
+               z := 10;
+            END
+
+// ------ PROBAMOS ASIGNACIONES ----- //
+
+        a := - 21; // ERROR ULONG NEGATIVO //
+        a := 20;
+        a := 256416546458655; // ERROR DE RANGO //
+        a := -.25E-36;
+        c := -2.01E+24;
+        c := 2.01E5;
+        c := 2.01;
+        d := -2.2250738585072015E-308; // ULTIMO VALOR NEGATIVO DENTRO DEL RANGO //
+        e := -1.7976931348623156E+308; // PRIMER VALOR NEGATIVO DENTRO DEL RANGO //
+        f := 2.2250738585072015E-308;  // PRIMER VALOR POSITIVO DENTRO DEL RANGO //
+        g := 1.7976931348623156E+308;  // ULTIMO VALOR POSITVO DENTRO DEL RANGO //
+        j := 0.0;
+        j = 235; // ERROR LEXICO ASIG (:=) //
+        d := - 2.2250738585072014E-308;  // ULTIMO VALOR NEGATIVO FUERA DEL RANGO //
+        e := 1.7976931348623157E+308; // PRIMER VALOR NEGATIVO FUERA DEL RANGO //
+        f := 2.2250738585072014E-308;  // PRIMER VALOR POSTIVO FUERA DEL RANGO //
+        g := 1.7976931348623157E+308;  // ULTIMO VALOR POSITIVO FUERA DEL RANGO //
+        h :=  1.7976931348623157E+309; // ERROR DE RANGO //
+        i :=  1.7976931348623159E-309; // ERROR DE RANGO //
+        // este comentario esta mal hecho
+
+    END;
