@@ -1,0 +1,23 @@
+Recursion
+    ULONG x, z;
+    DOUBLE y;
+    ULONG FUNC m (DOUBLE j)
+        ULONG w;
+        DOUBLE n;
+            BEGIN
+                z := v(y);
+                x := j;
+                RETURN(x);
+            END;
+
+    ULONG FUNC v (DOUBLE h)
+        ULONG w,b,a;
+        DOUBLE n;
+            BEGIN
+                z := m(h);
+                z := a + 10;
+                RETURN(b);
+            END;
+BEGIN
+    x := m(y);
+END;

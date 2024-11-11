@@ -1,0 +1,7 @@
+TiposIncompatibles
+    DOUBLE x;
+    ULONG y;
+BEGIN
+    x := y; // Es posible por conversion //
+    y := x; // Se construye el assembler porque es error de ejecucion //
+END;

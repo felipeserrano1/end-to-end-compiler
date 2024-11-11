@@ -1,0 +1,114 @@
+Test
+    DOUBLE x,y,b;
+    ULONG z,e,q,t;
+    FUNC copia;
+    ULONG FUNC m (DOUBLE j)
+        ULONG w;
+        DOUBLE n;
+            BEGIN
+                z := v(y);
+                x := j;
+                z := e + 10;
+                q := 2;
+                RETURN(q);
+            END;
+    
+    ULONG FUNC v (DOUBLE h)
+        ULONG w,b,a;
+        DOUBLE n;
+            BEGIN
+                w := 3;
+                PRINT(%entro desde variable tipo FUNC%);
+                RETURN (w);
+            END;
+
+    ULONG FUNC prueba(DOUBLE i)
+        BEGIN
+            e := 9;
+            PRINT(% entro a la funcion %);
+            RETURN (e);
+            POST:(e > 10);
+        END;
+
+    ULONG FUNC prueba2(DOUBLE i)
+        BEGIN
+            e := 11;
+            RETURN (e);
+            POST:(e >= 10);
+        END;
+
+    ULONG FUNC prueba3(ULONG i)
+        BEGIN
+            e := i + 3;
+            RETURN (e);
+        END;
+
+    ULONG FUNC prueba4(DOUBLE i)
+        BEGIN
+            e := 9;
+            RETURN (e);
+        END;
+
+BEGIN
+    PRINT(%entro al programa%);
+
+
+    copia := v;
+    z := copia(x);
+
+
+    t := 9;
+    e := prueba3(t);
+    IF (e < 10) THEN // Debe entrar a mayor //
+        PRINT(%menor%);
+    ELSE
+        PRINT(%mayor%);
+    ENDIF;
+
+
+    e := prueba4(x);
+    IF (z < 10) THEN // Debe entrar a menor //
+        PRINT(%menor%);
+    ELSE
+        PRINT(%mayor%);
+    ENDIF;
+
+
+    x := q * e;
+
+
+    TRY // Debe entrar a catch //
+        z := prueba(x);
+    CATCH
+        BEGIN
+            PRINT(%entro al catch%);
+        END;
+    PRINT(%no entro al catch%);
+
+
+    TRY // No debe entrar a catch //
+        z := prueba2(x);
+    CATCH
+        BEGIN
+            PRINT(%entro al catch 2%);
+        END;
+    PRINT(%no entro al catch 2%);
+
+
+    z := 3;
+    WHILE (z < 10) DO
+        BEGIN
+            IF(z > 5) THEN
+            BEGIN
+                PRINT(%aca tiene que salir%);
+                BREAK;
+            END;
+            ELSE
+            BEGIN
+                z := z + 1;
+                PRINT(%else%);
+            END;
+            ENDIF;
+       END;
+    PRINT(%salio while%);
+END;

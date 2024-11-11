@@ -1,0 +1,22 @@
+VarFunc
+    FUNC x;
+    ULONG y,z;
+
+    ULONG FUNC prueba(ULONG i)
+        ULONG e;
+        BEGIN
+            PRINT(%entro a la funcion%);
+            RETURN(i);
+        END;
+
+
+BEGIN
+    z := 2;
+    x := prueba;
+    y := x(z);
+    IF (y == 2) THEN
+        BEGIN
+            PRINT(%y vale 2%);
+         END;
+    ENDIF;
+END;

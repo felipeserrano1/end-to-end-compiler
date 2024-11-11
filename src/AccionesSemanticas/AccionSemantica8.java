@@ -15,7 +15,6 @@ public class AccionSemantica8 extends AccionSemantica{
         contenido.append(c);
         this.incrementarIndice();
         tipo = contenido.toString();
-        System.out.println(contenido);
         return new TokenLexema(-1);
     }
 }

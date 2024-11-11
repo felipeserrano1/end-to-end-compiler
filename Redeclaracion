@@ -1,0 +1,7 @@
+Redeclaracion
+    DOUBLE x,y;
+    DOUBLE x;
+
+BEGIN
+    x := y; // no se debe hacer porque hay error semantico //
+END;

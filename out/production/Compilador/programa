@@ -75,9 +75,9 @@ programa
 
         (y < 10) THEN // FALTA IF //
             ULONG j;
-                 BEGIN
-                      x := 10;
-                 END;
+            BEGIN
+                x := 10;
+            END;
         ENDIF;
 
         IF (y < 10)  // FALTA THEN //

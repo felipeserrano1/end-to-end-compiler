@@ -1,0 +1,5 @@
+NoDeclarado
+    ULONG x,y;
+BEGIN
+    x := z(y); // No esta declarada z por lo tanto no tiene que generar assembler //
+END;

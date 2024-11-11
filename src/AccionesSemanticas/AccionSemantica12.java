@@ -15,10 +15,9 @@ public class AccionSemantica12 extends AccionSemantica{
         contenido.append(c);
         this.incrementarIndice();
         tipo = "CADENA";
-        System.out.println("Cadena: " + contenido);
-        Token t = new Token(contenido.toString());
+        Token t = new Token(contenido.toString(), "cadena");
         if (!this.tabla.contains(t)){
-            this.tabla.addSimbolo(new Token(contenido.toString()));
+            this.tabla.addSimbolo(t);
         }
         return new TokenLexema(this.tabla.buscarIndice(contenido.toString()));
     }

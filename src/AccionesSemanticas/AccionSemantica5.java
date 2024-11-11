@@ -21,10 +21,10 @@ public class AccionSemantica5 extends AccionSemantica{
                 (aux.compareTo(maximo) == 1 && aux.compareTo(minimo) == -1) ||
                 aux.compareTo(new BigDecimal(0.0)) == 0){
             Token t = new Token(contenido.toString(), "double");
+            t.setUso("cte");
             if (!this.tabla.contains(t))
                 this.tabla.addSimbolo(t);
             this.tipo = "CTE";
-            System.out.println("Double: " + aux);
             return new TokenLexema(this.tabla.buscarIndice(contenido.toString()));
         } else {
             this.tipo = "ERROR";

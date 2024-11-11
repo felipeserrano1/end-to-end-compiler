@@ -2,11 +2,12 @@ package AnalizadorLexico;
 
 import AccionesSemanticas.*;
 import AnalizadorSintactico.ParserVal;
+import utilidades.*;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +20,6 @@ public class AnalizadorLexico {
     private int linea = 1;
     AtomicInteger indice = new AtomicInteger(0);
     private ArrayList<Integer> archivo = new ArrayList<>();
-    private ArrayList<String> erroresLexicos = new ArrayList<>();
     private TablaSimbolos tabla;
     private HashMap<String, Integer> tokenIdentificacion = new HashMap<>();
     private HashMap<Character, Integer> columnaMatriz = new HashMap<>();
@@ -37,6 +37,14 @@ public class AnalizadorLexico {
     private AccionSemantica10 as10 = new AccionSemantica10(indice);
     private AccionSemantica11 as11 = new AccionSemantica11(indice);
     private AccionSemantica12 as12 = new AccionSemantica12(indice);
+
+    public void reset(){
+        linea = 1;
+        indice.set(0);
+        archivo = new ArrayList<>();
+        tokenActual = null;
+
+    }
 
     private int[][] matrizEstados ={
             {1, 12, 2, 17, 13, 17, 17, 17, 17, 17, 17, 1, 5, 6, 10, 7, 8, 11, 9, 0, 0, 18, 1},
@@ -107,7 +115,7 @@ public class AnalizadorLexico {
         this.columnaMatriz.put('\t',19);
         this.columnaMatriz.put(' ', 19);
         this.columnaMatriz.put('\n',20);
-        this.columnaMatriz.put('c',21); //resto
+        this.columnaMatriz.put('c',21);
         this.columnaMatriz.put('E',22);
     }
 
@@ -171,17 +179,6 @@ public class AnalizadorLexico {
         archivo.add(36);
     }
 
-    private InputStream getFileFromResourceAsStream(String fileName) {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream(fileName);
-
-        if (inputStream == null) {
-            throw new IllegalArgumentException("file not found! " + fileName);
-        } else {
-            return inputStream;
-        }
-    }
-
     public TokenLexema leerToken() {
         int estado = 0;
         int estadoAnt;
@@ -202,7 +199,8 @@ public class AnalizadorLexico {
                 String tipoToken = this.matrizAcciones[estadoAnt][estado].devolver();
                 tokenLexema.setID(this.tokenIdentificacion.get(tipoToken));
                 if (this.tokenIdentificacion.get(tipoToken) == 278)
-                    this.erroresLexicos.add("Linea " + this.linea + ": Error de rango");
+                    ListaError.addErrores("Linea " + this.linea + ": Error Lexico, constante fuera de rango");
+
                 return tokenLexema;
             }
             else if(ascii == 36 && estado != 3){ // $ pero fuera de comentario, fin archivo
@@ -210,17 +208,16 @@ public class AnalizadorLexico {
             }
             else if(estado == 18) { // Se encontro un error
                 estado = 0;
-                this.erroresLexicos.add("Linea " + this.linea + ": No se puede agregar " + this.matrizAcciones[estadoAnt][estado].devolver());
+                ListaError.addErrores("Linea " + this.linea + ": Error Lexico, no se puede agregar " + this.matrizAcciones[estadoAnt][estado].devolver());
                 TokenLexema error = new TokenLexema(-1);
                 error.setID(278);
                 return error;
             }
         }
         if (estado == 2 || estado == 3 || estado == 4){
-            this.erroresLexicos.add("No se cerro el comentario al final del archivo ");
+            ListaError.addErrores("Linea " + this.linea + ": Error Lexico, no se cerro el comentario al final del archivo ");
             return null;
         }
-        System.out.println(this.erroresLexicos);
         return null;
     }
 
@@ -257,10 +254,6 @@ public class AnalizadorLexico {
         return new ParserVal(tokenActual.getIndiceTabla());
     }
 
-    public ArrayList<String> getErroresLexicos(){
-        return this.erroresLexicos;
-    }
-
     public int getLinea(){
         return this.linea;
     }
@@ -284,8 +277,4 @@ public class AnalizadorLexico {
         this.as11.setTabla(tablaSimbolos);
         this.as12.setTabla(tablaSimbolos);
     }
-
 }
-
-
-

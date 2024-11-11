@@ -2,142 +2,202 @@
 
    1  programa : ID bloque_sentencias
 
-   2  bloque_try : TRY sentencia_try CATCH BEGIN sentencia_compuesta_try END
-   3             | TRY sentencia_try error BEGIN sentencia_compuesta_try END
-   4             | TRY sentencia_try CATCH BEGIN sentencia_compuesta_try error
-   5             | TRY sentencia_try CATCH error sentencia_compuesta_try END
+   2  bloque_try : bloque_try_comienzo bloque_catch
 
-   6  bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END ';'
-   7                    | sentencia_declarativa BEGIN sentencia_compuesta END error
-   8                    | sentencia_declarativa BEGIN sentencia_compuesta error ';'
-   9                    | BEGIN sentencia_compuesta END ';'
-  10                    | sentencia_simple
-  11                    | sentencia_declarativa error sentencia_compuesta END ';'
-  12                    | error sentencia_compuesta END ';'
-  13                    | BEGIN sentencia_compuesta error ';'
-  14                    | BEGIN sentencia_compuesta END error
+   3  $$1 :
 
-  15  sentencia_declarativa : sentencia_declarativa declaracion ';'
-  16                        | sentencia_declarativa declaracion error
-  17                        | declaracion ';'
-  18                        | declaracion error
+   4  bloque_try_comienzo : TRY sentencia_try $$1
 
-  19  declaracion : declaracion_var
-  20              | declaracion_func
+   5  bloque_catch : CATCH BEGIN sentencia_compuesta_try END
+   6               | error BEGIN sentencia_compuesta_try END
+   7               | CATCH BEGIN sentencia_compuesta_try error
+   8               | CATCH error sentencia_compuesta_try END
 
-  21  declaracion_var : tipo lista_var
-  22                  | FUNC lista_var
-  23                  | error lista_var
+   9  bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END ';'
+  10                    | sentencia_declarativa BEGIN sentencia_compuesta END error
+  11                    | sentencia_declarativa BEGIN sentencia_compuesta error ';'
+  12                    | sentencia_declarativa error sentencia_compuesta END ';'
+  13                    | sentencia_declarativa BEGIN END ';'
+  14                    | sentencia_declarativa error END ';'
+  15                    | sentencia_declarativa BEGIN error ';'
+  16                    | sentencia_declarativa BEGIN END error
+  17                    | BEGIN sentencia_compuesta END ';'
+  18                    | error sentencia_compuesta END ';'
+  19                    | BEGIN sentencia_compuesta error ';'
+  20                    | BEGIN sentencia_compuesta END error
+  21                    | BEGIN END ';'
+  22                    | sentencia_simple
 
-  24  tipo : DOUBLE
-  25       | ULONG
+  23  sentencia_declarativa : sentencia_declarativa declaracion ';'
+  24                        | sentencia_declarativa declaracion error
+  25                        | declaracion ';'
+  26                        | declaracion error
 
-  26  lista_var : lista_var ',' ID
-  27            | ID
-  28            | error
+  27  declaracion : declaracion_var
+  28              | func
 
-  29  declaracion_func : tipo FUNC ID '(' parametro ')' cuerpo_func
+  29  declaracion_var : tipo lista_var
 
-  30  parametro : tipo ID
+  30  $$2 :
 
-  31  cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END
-  32              | sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' END
-  33              | sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' END
-  34              | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' END
-  35              | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error
-  36              | BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END
-  37              | error sentencia_compuesta RETURN '(' expresion ')' ';' END
-  38              | BEGIN sentencia_compuesta RETURN error expresion ')' ';' END
-  39              | BEGIN sentencia_compuesta RETURN '(' expresion error ';' END
-  40              | BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error
-  41              | sentencia_declarativa error RETURN '(' expresion ')' ';' END
-  42              | sentencia_declarativa BEGIN RETURN error expresion ')' ';' END
-  43              | sentencia_declarativa BEGIN RETURN '(' expresion error ';' END
-  44              | sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error
-  45              | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END
-  46              | sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END
-  47              | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error
-  48              | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END
+  31  declaracion_var : FUNC $$2 lista_var
+  32                  | error lista_var
 
-  49  expresion : expresion '+' termino
-  50            | expresion '-' termino
-  51            | termino
+  33  tipo : DOUBLE
+  34       | ULONG
 
-  52  termino : termino '*' factor
-  53          | termino '/' factor
-  54          | factor
+  35  lista_var : lista_var ',' ID
+  36            | ID
+  37            | error
 
-  55  factor : ID
-  56         | '-' CTE
-  57         | CTE
-  58         | ID '(' parametro ')'
-  59         | ERROR
-  60         | '-' ERROR
+  38  func : declaracion_func parametro_func cuerpo_func
 
-  61  sentencia_compuesta : sentencia_compuesta sentencia_simple
-  62                      | sentencia_simple
+  39  $$3 :
 
-  63  sentencia_simple : ID ASIG expresion ';'
-  64                   | ID ERROR expresion ';'
-  65                   | seleccion ';'
-  66                   | seleccion error
-  67                   | print error
-  68                   | print ';'
-  69                   | iteracion
-  70                   | BREAK ';'
-  71                   | BREAK error
-  72                   | bloque_try ';'
-  73                   | bloque_try error
+  40  declaracion_func : tipo FUNC ID $$3
 
-  74  sentencia_compuesta_try : sentencia_compuesta_try sentencia_try
-  75                          | sentencia_try
+  41  parametro_func : '(' parametro ')'
 
-  76  sentencia_try : ID ASIG expresion ';'
-  77                | ID error expresion ';'
-  78                | ID ASIG expresion error
-  79                | seleccion ';'
-  80                | seleccion error
-  81                | print error
-  82                | print ';'
-  83                | iteracion
-  84                | BREAK ';'
-  85                | BREAK error
+  42  parametro : tipo ID
 
-  86  seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF
-  87            | IF error condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF
-  88            | IF '(' condicion error THEN bloque_sentencias ELSE bloque_sentencias ENDIF
-  89            | IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias error
-  90            | IF '(' condicion ')' THEN bloque_sentencias ENDIF
-  91            | IF '(' condicion ')' error bloque_sentencias ELSE bloque_sentencias ENDIF
-  92            | IF error condicion ')' THEN bloque_sentencias ENDIF
-  93            | IF '(' condicion error THEN bloque_sentencias ENDIF
-  94            | IF '(' condicion ')' error bloque_sentencias ENDIF
-  95            | IF '(' condicion ')' THEN bloque_sentencias error
-  96            | error '(' condicion ')' THEN bloque_sentencias ENDIF
-  97            | error '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF
+  43  cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END
+  44              | BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END
+  45              | sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' END
 
-  98  condicion : expresion operadores expresion
-  99            | expresion
+  46  $$4 :
 
- 100  operadores : '>'
- 101             | "MAYOR_IGUAL"
- 102             | "MENOR_IGUAL"
- 103             | '<'
- 104             | "IGUAL"
- 105             | "DISTINTO"
- 106             | "AND"
- 107             | "OR"
+  47  cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4
 
- 108  print : PRINT '(' CADENA ')'
- 109        | PRINT '(' CADENA error
- 110        | PRINT '(' error ')'
- 111        | PRINT error CADENA ')'
+  48  $$5 :
 
- 112  iteracion : WHILE '(' condicion ')' DO bloque_sentencias
- 113            | error '(' condicion ')' DO bloque_sentencias
- 114            | WHILE '(' condicion ')' error bloque_sentencias
- 115            | WHILE error condicion ')' DO bloque_sentencias
- 116            | WHILE '(' condicion error DO bloque_sentencias
+  49  cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5
+  50              | cuerpo_func_error
+
+  51  cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' END
+  52                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error END
+  53                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' END
+  54                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' END
+  55                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error
+  56                    | error sentencia_compuesta RETURN '(' expresion ')' ';' END
+  57                    | BEGIN sentencia_compuesta '(' expresion ')' ';' END
+  58                    | BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error END
+  59                    | BEGIN sentencia_compuesta RETURN error expresion ')' ';' END
+  60                    | BEGIN sentencia_compuesta RETURN '(' expresion error ';' END
+  61                    | BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error
+  62                    | sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END
+  63                    | sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END
+  64                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END
+  65                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error
+  66                    | sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END
+  67                    | sentencia_declarativa error RETURN '(' expresion ')' ';' END
+  68                    | sentencia_declarativa BEGIN '(' expresion ')' ';' END
+  69                    | sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error END
+  70                    | sentencia_declarativa BEGIN RETURN error expresion ')' ';' END
+  71                    | sentencia_declarativa BEGIN RETURN '(' expresion error ';' END
+  72                    | sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error
+
+  73  expresion : expresion '+' termino
+  74            | expresion '-' termino
+  75            | termino
+
+  76  termino : termino '*' factor
+  77          | termino '/' factor
+  78          | factor
+
+  79  factor : ID
+
+  80  $$6 :
+
+  81  factor : '-' CTE $$6
+  82         | CTE
+  83         | ID '(' parametro_inv ')'
+  84         | ERROR
+  85         | '-' ERROR
+
+  86  parametro_inv : ID
+  87                | '-' CTE
+  88                | CTE
+
+  89  sentencia_compuesta : sentencia_compuesta sentencia_simple
+  90                      | sentencia_simple
+
+  91  $$7 :
+
+  92  sentencia_simple : ID ASIG expresion ';' $$7
+  93                   | ID ASIG error ';'
+  94                   | ID ERROR expresion ';'
+  95                   | seleccion ';'
+  96                   | seleccion error
+  97                   | print error
+  98                   | print ';'
+  99                   | iteracion
+ 100                   | BREAK ';'
+ 101                   | BREAK error
+ 102                   | bloque_try ';'
+ 103                   | bloque_try error
+
+ 104  sentencia_compuesta_try : sentencia_compuesta_try sentencia_try
+ 105                          | sentencia_try
+
+ 106  $$8 :
+
+ 107  sentencia_try : ID ASIG expresion ';' $$8
+ 108                | ID error expresion ';'
+ 109                | ID ASIG expresion error
+ 110                | seleccion ';'
+ 111                | seleccion error
+ 112                | print error
+ 113                | print ';'
+ 114                | iteracion
+ 115                | BREAK ';'
+ 116                | BREAK error
+
+ 117  $$9 :
+
+ 118  seleccion : IF cond THEN cuerpo_if ENDIF $$9
+ 119            | IF cond error cuerpo_if ENDIF
+ 120            | IF cond THEN cuerpo_if error
+ 121            | error cond THEN cuerpo_if ENDIF
+ 122            | IF error THEN cuerpo_if ENDIF
+
+ 123  cuerpo_if : cuerpo_then ELSE cuerpo_else
+ 124            | cuerpo_then
+
+ 125  cuerpo_then : bloque_sentencias
+
+ 126  cuerpo_else : bloque_sentencias
+
+ 127  cond : '(' condicion ')'
+
+ 128  condicion : condicion operadores expresion
+ 129            | expresion
+
+ 130  operadores : '>'
+ 131             | "MAYOR_IGUAL"
+ 132             | "MENOR_IGUAL"
+ 133             | '<'
+ 134             | "IGUAL"
+ 135             | "DISTINTO"
+ 136             | "AND"
+ 137             | "OR"
+
+ 138  $$10 :
+
+ 139  print : PRINT '(' CADENA ')' $$10
+ 140        | PRINT '(' CADENA error
+ 141        | PRINT '(' error ')'
+ 142        | PRINT error CADENA ')'
+
+ 143  $$11 :
+
+ 144  iteracion : inicio_while cond cuerpo_while $$11
+ 145            | error cond cuerpo_while
+ 146            | inicio_while error cuerpo_while
+
+ 147  inicio_while : WHILE
+
+ 148  cuerpo_while : DO bloque_sentencias
+ 149               | error bloque_sentencias
 
 state 0
 	$accept : . programa $end  (0)
@@ -166,15 +226,18 @@ state 1
 
 	bloque_sentencias  goto 14
 	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
 state 2
@@ -184,150 +247,145 @@ state 2
 
 
 state 3
-	bloque_sentencias : error . sentencia_compuesta END ';'  (12)
-	declaracion_var : error . lista_var  (23)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
+	bloque_sentencias : error . sentencia_compuesta END ';'  (18)
+	declaracion_var : error . lista_var  (32)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
 
-	error  shift 25
-	ID  shift 26
+	error  shift 28
+	ID  shift 29
 	IF  shift 5
 	PRINT  shift 6
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
-	'('  shift 27
+	'('  shift 30
 	.  error
 
 	bloque_try  goto 15
-	sentencia_compuesta  goto 28
-	sentencia_simple  goto 29
-	lista_var  goto 30
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 31
+	sentencia_simple  goto 32
+	lista_var  goto 33
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cond  goto 34
+	inicio_while  goto 27
 
 
 state 4
-	sentencia_simple : ID . ASIG expresion ';'  (63)
-	sentencia_simple : ID . ERROR expresion ';'  (64)
+	sentencia_simple : ID . ASIG expresion ';' $$7  (92)
+	sentencia_simple : ID . ASIG error ';'  (93)
+	sentencia_simple : ID . ERROR expresion ';'  (94)
 
-	ASIG  shift 31
-	ERROR  shift 32
+	ASIG  shift 35
+	ERROR  shift 36
 	.  error
 
 
 state 5
-	seleccion : IF . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF . error condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF . '(' condicion error THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias error  (89)
-	seleccion : IF . '(' condicion ')' THEN bloque_sentencias ENDIF  (90)
-	seleccion : IF . '(' condicion ')' error bloque_sentencias ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF . error condicion ')' THEN bloque_sentencias ENDIF  (92)
-	seleccion : IF . '(' condicion error THEN bloque_sentencias ENDIF  (93)
-	seleccion : IF . '(' condicion ')' error bloque_sentencias ENDIF  (94)
-	seleccion : IF . '(' condicion ')' THEN bloque_sentencias error  (95)
+	seleccion : IF . cond THEN cuerpo_if ENDIF $$9  (118)
+	seleccion : IF . cond error cuerpo_if ENDIF  (119)
+	seleccion : IF . cond THEN cuerpo_if error  (120)
+	seleccion : IF . error THEN cuerpo_if ENDIF  (122)
 
-	error  shift 33
-	'('  shift 34
+	error  shift 37
+	'('  shift 30
 	.  error
+
+	cond  goto 38
 
 
 state 6
-	print : PRINT . '(' CADENA ')'  (108)
-	print : PRINT . '(' CADENA error  (109)
-	print : PRINT . '(' error ')'  (110)
-	print : PRINT . error CADENA ')'  (111)
+	print : PRINT . '(' CADENA ')' $$10  (139)
+	print : PRINT . '(' CADENA error  (140)
+	print : PRINT . '(' error ')'  (141)
+	print : PRINT . error CADENA ')'  (142)
 
-	error  shift 35
-	'('  shift 36
+	error  shift 39
+	'('  shift 40
 	.  error
 
 
 state 7
-	declaracion_var : FUNC . lista_var  (22)
+	declaracion_var : FUNC . $$2 lista_var  (31)
+	$$2 : .  (30)
 
-	error  shift 37
-	ID  shift 38
-	.  error
+	.  reduce 30
 
-	lista_var  goto 39
+	$$2  goto 41
 
 
 state 8
-	bloque_sentencias : BEGIN . sentencia_compuesta END ';'  (9)
-	bloque_sentencias : BEGIN . sentencia_compuesta error ';'  (13)
-	bloque_sentencias : BEGIN . sentencia_compuesta END error  (14)
+	bloque_sentencias : BEGIN . sentencia_compuesta END ';'  (17)
+	bloque_sentencias : BEGIN . sentencia_compuesta error ';'  (19)
+	bloque_sentencias : BEGIN . sentencia_compuesta END error  (20)
+	bloque_sentencias : BEGIN . END ';'  (21)
 
-	error  shift 40
+	error  shift 42
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
+	END  shift 43
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
 	bloque_try  goto 15
-	sentencia_compuesta  goto 41
-	sentencia_simple  goto 29
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 44
+	sentencia_simple  goto 32
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
 state 9
-	sentencia_simple : BREAK . ';'  (70)
-	sentencia_simple : BREAK . error  (71)
+	sentencia_simple : BREAK . ';'  (100)
+	sentencia_simple : BREAK . error  (101)
 
-	error  shift 42
-	';'  shift 43
+	error  shift 45
+	';'  shift 46
 	.  error
 
 
 state 10
-	tipo : ULONG .  (25)
+	tipo : ULONG .  (34)
 
-	.  reduce 25
+	.  reduce 34
 
 
 state 11
-	tipo : DOUBLE .  (24)
+	tipo : DOUBLE .  (33)
 
-	.  reduce 24
+	.  reduce 33
 
 
 state 12
-	iteracion : WHILE . '(' condicion ')' DO bloque_sentencias  (112)
-	iteracion : WHILE . '(' condicion ')' error bloque_sentencias  (114)
-	iteracion : WHILE . error condicion ')' DO bloque_sentencias  (115)
-	iteracion : WHILE . '(' condicion error DO bloque_sentencias  (116)
+	inicio_while : WHILE .  (147)
 
-	error  shift 44
-	'('  shift 45
-	.  error
+	.  reduce 147
 
 
 state 13
-	bloque_try : TRY . sentencia_try CATCH BEGIN sentencia_compuesta_try END  (2)
-	bloque_try : TRY . sentencia_try error BEGIN sentencia_compuesta_try END  (3)
-	bloque_try : TRY . sentencia_try CATCH BEGIN sentencia_compuesta_try error  (4)
-	bloque_try : TRY . sentencia_try CATCH error sentencia_compuesta_try END  (5)
+	bloque_try_comienzo : TRY . sentencia_try $$1  (4)
 
-	error  shift 40
-	ID  shift 46
+	error  shift 42
+	ID  shift 47
 	IF  shift 5
 	PRINT  shift 6
-	BREAK  shift 47
+	BREAK  shift 48
 	WHILE  shift 12
 	.  error
 
-	sentencia_try  goto 48
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
+	sentencia_try  goto 49
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
 
 
 state 14
@@ -337,2242 +395,1896 @@ state 14
 
 
 state 15
-	sentencia_simple : bloque_try . ';'  (72)
-	sentencia_simple : bloque_try . error  (73)
+	sentencia_simple : bloque_try . ';'  (102)
+	sentencia_simple : bloque_try . error  (103)
 
-	error  shift 52
-	';'  shift 53
+	error  shift 53
+	';'  shift 54
 	.  error
 
 
 state 16
-	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta END ';'  (6)
-	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta END error  (7)
-	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta error ';'  (8)
-	bloque_sentencias : sentencia_declarativa . error sentencia_compuesta END ';'  (11)
-	sentencia_declarativa : sentencia_declarativa . declaracion ';'  (15)
-	sentencia_declarativa : sentencia_declarativa . declaracion error  (16)
+	bloque_try : bloque_try_comienzo . bloque_catch  (2)
 
-	error  shift 54
+	error  shift 55
+	CATCH  shift 56
+	.  error
+
+	bloque_catch  goto 57
+
+
+state 17
+	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta END ';'  (9)
+	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta END error  (10)
+	bloque_sentencias : sentencia_declarativa . BEGIN sentencia_compuesta error ';'  (11)
+	bloque_sentencias : sentencia_declarativa . error sentencia_compuesta END ';'  (12)
+	bloque_sentencias : sentencia_declarativa . BEGIN END ';'  (13)
+	bloque_sentencias : sentencia_declarativa . error END ';'  (14)
+	bloque_sentencias : sentencia_declarativa . BEGIN error ';'  (15)
+	bloque_sentencias : sentencia_declarativa . BEGIN END error  (16)
+	sentencia_declarativa : sentencia_declarativa . declaracion ';'  (23)
+	sentencia_declarativa : sentencia_declarativa . declaracion error  (24)
+
+	error  shift 58
 	FUNC  shift 7
-	BEGIN  shift 55
+	BEGIN  shift 59
 	ULONG  shift 10
 	DOUBLE  shift 11
 	.  error
 
-	declaracion  goto 56
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-
-
-state 17
-	bloque_sentencias : sentencia_simple .  (10)
-
-	.  reduce 10
+	declaracion  goto 60
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
 
 
 state 18
-	sentencia_declarativa : declaracion . ';'  (17)
-	sentencia_declarativa : declaracion . error  (18)
+	bloque_sentencias : sentencia_simple .  (22)
 
-	error  shift 57
-	';'  shift 58
-	.  error
+	.  reduce 22
 
 
 state 19
-	declaracion : declaracion_var .  (19)
-
-	.  reduce 19
-
-
-state 20
-	declaracion : declaracion_func .  (20)
-
-	.  reduce 20
-
-
-state 21
-	declaracion_var : tipo . lista_var  (21)
-	declaracion_func : tipo . FUNC ID '(' parametro ')' cuerpo_func  (29)
-
-	error  shift 37
-	ID  shift 38
-	FUNC  shift 59
-	.  error
-
-	lista_var  goto 60
-
-
-state 22
-	sentencia_simple : seleccion . ';'  (65)
-	sentencia_simple : seleccion . error  (66)
+	sentencia_declarativa : declaracion . ';'  (25)
+	sentencia_declarativa : declaracion . error  (26)
 
 	error  shift 61
 	';'  shift 62
 	.  error
 
 
-state 23
-	sentencia_simple : print . error  (67)
-	sentencia_simple : print . ';'  (68)
-
-	error  shift 63
-	';'  shift 64
-	.  error
-
-
-state 24
-	sentencia_simple : iteracion .  (69)
-
-	.  reduce 69
-
-
-state 25
-	lista_var : error .  (28)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
-
-	'('  shift 27
-	error  reduce 28
-	';'  reduce 28
-	','  reduce 28
-
-
-state 26
-	lista_var : ID .  (27)
-	sentencia_simple : ID . ASIG expresion ';'  (63)
-	sentencia_simple : ID . ERROR expresion ';'  (64)
-
-	ASIG  shift 31
-	ERROR  shift 32
-	error  reduce 27
-	';'  reduce 27
-	','  reduce 27
-
-
-state 27
-	seleccion : error '(' . condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error '(' . condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error '(' . condicion ')' DO bloque_sentencias  (113)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 70
-	termino  goto 71
-	factor  goto 72
-
-
-state 28
-	bloque_sentencias : error sentencia_compuesta . END ';'  (12)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
-
-	error  shift 40
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 73
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 29
-	sentencia_compuesta : sentencia_simple .  (62)
-
-	.  reduce 62
-
-
-state 30
-	declaracion_var : error lista_var .  (23)
-	lista_var : lista_var . ',' ID  (26)
-
-	','  shift 75
-	error  reduce 23
-	';'  reduce 23
-
-
-state 31
-	sentencia_simple : ID ASIG . expresion ';'  (63)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 76
-	termino  goto 71
-	factor  goto 72
-
-
-state 32
-	sentencia_simple : ID ERROR . expresion ';'  (64)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 77
-	termino  goto 71
-	factor  goto 72
-
-
-state 33
-	seleccion : IF error . condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF error . condicion ')' THEN bloque_sentencias ENDIF  (92)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 78
-	termino  goto 71
-	factor  goto 72
-
-
-state 34
-	seleccion : IF '(' . condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' . condicion error THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF '(' . condicion ')' THEN bloque_sentencias ELSE bloque_sentencias error  (89)
-	seleccion : IF '(' . condicion ')' THEN bloque_sentencias ENDIF  (90)
-	seleccion : IF '(' . condicion ')' error bloque_sentencias ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF '(' . condicion error THEN bloque_sentencias ENDIF  (93)
-	seleccion : IF '(' . condicion ')' error bloque_sentencias ENDIF  (94)
-	seleccion : IF '(' . condicion ')' THEN bloque_sentencias error  (95)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 79
-	termino  goto 71
-	factor  goto 72
-
-
-state 35
-	print : PRINT error . CADENA ')'  (111)
-
-	CADENA  shift 80
-	.  error
-
-
-state 36
-	print : PRINT '(' . CADENA ')'  (108)
-	print : PRINT '(' . CADENA error  (109)
-	print : PRINT '(' . error ')'  (110)
-
-	error  shift 81
-	CADENA  shift 82
-	.  error
-
-
-state 37
-	lista_var : error .  (28)
-
-	.  reduce 28
-
-
-state 38
-	lista_var : ID .  (27)
+state 20
+	declaracion : declaracion_var .  (27)
 
 	.  reduce 27
 
 
-state 39
-	declaracion_var : FUNC lista_var .  (22)
-	lista_var : lista_var . ',' ID  (26)
+state 21
+	declaracion : func .  (28)
 
-	','  shift 75
-	error  reduce 22
-	';'  reduce 22
+	.  reduce 28
 
 
-state 40
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
+state 22
+	declaracion_var : tipo . lista_var  (29)
+	declaracion_func : tipo . FUNC ID $$3  (40)
 
-	'('  shift 27
+	error  shift 63
+	ID  shift 64
+	FUNC  shift 65
+	.  error
+
+	lista_var  goto 66
+
+
+state 23
+	func : declaracion_func . parametro_func cuerpo_func  (38)
+
+	'('  shift 67
+	.  error
+
+	parametro_func  goto 68
+
+
+state 24
+	sentencia_simple : seleccion . ';'  (95)
+	sentencia_simple : seleccion . error  (96)
+
+	error  shift 69
+	';'  shift 70
 	.  error
 
 
-state 41
-	bloque_sentencias : BEGIN sentencia_compuesta . END ';'  (9)
-	bloque_sentencias : BEGIN sentencia_compuesta . error ';'  (13)
-	bloque_sentencias : BEGIN sentencia_compuesta . END error  (14)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
+state 25
+	sentencia_simple : print . error  (97)
+	sentencia_simple : print . ';'  (98)
 
-	error  shift 83
+	error  shift 71
+	';'  shift 72
+	.  error
+
+
+state 26
+	sentencia_simple : iteracion .  (99)
+
+	.  reduce 99
+
+
+state 27
+	iteracion : inicio_while . cond cuerpo_while $$11  (144)
+	iteracion : inicio_while . error cuerpo_while  (146)
+
+	error  shift 73
+	'('  shift 30
+	.  error
+
+	cond  goto 74
+
+
+state 28
+	lista_var : error .  (37)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
+
+	'('  shift 30
+	error  reduce 37
+	';'  reduce 37
+	','  reduce 37
+
+	cond  goto 34
+
+
+state 29
+	lista_var : ID .  (36)
+	sentencia_simple : ID . ASIG expresion ';' $$7  (92)
+	sentencia_simple : ID . ASIG error ';'  (93)
+	sentencia_simple : ID . ERROR expresion ';'  (94)
+
+	ASIG  shift 35
+	ERROR  shift 36
+	error  reduce 36
+	';'  reduce 36
+	','  reduce 36
+
+
+state 30
+	cond : '(' . condicion ')'  (127)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 80
+	termino  goto 81
+	factor  goto 82
+
+
+state 31
+	bloque_sentencias : error sentencia_compuesta . END ';'  (18)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 42
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
-	END  shift 84
+	END  shift 83
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
 	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 42
-	sentencia_simple : BREAK error .  (71)
-
-	.  reduce 71
-
-
-state 43
-	sentencia_simple : BREAK ';' .  (70)
-
-	.  reduce 70
-
-
-state 44
-	iteracion : WHILE error . condicion ')' DO bloque_sentencias  (115)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 85
-	termino  goto 71
-	factor  goto 72
-
-
-state 45
-	iteracion : WHILE '(' . condicion ')' DO bloque_sentencias  (112)
-	iteracion : WHILE '(' . condicion ')' error bloque_sentencias  (114)
-	iteracion : WHILE '(' . condicion error DO bloque_sentencias  (116)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 86
-	termino  goto 71
-	factor  goto 72
-
-
-state 46
-	sentencia_try : ID . ASIG expresion ';'  (76)
-	sentencia_try : ID . error expresion ';'  (77)
-	sentencia_try : ID . ASIG expresion error  (78)
-
-	error  shift 87
-	ASIG  shift 88
-	.  error
-
-
-state 47
-	sentencia_try : BREAK . ';'  (84)
-	sentencia_try : BREAK . error  (85)
-
-	error  shift 89
-	';'  shift 90
-	.  error
-
-
-state 48
-	bloque_try : TRY sentencia_try . CATCH BEGIN sentencia_compuesta_try END  (2)
-	bloque_try : TRY sentencia_try . error BEGIN sentencia_compuesta_try END  (3)
-	bloque_try : TRY sentencia_try . CATCH BEGIN sentencia_compuesta_try error  (4)
-	bloque_try : TRY sentencia_try . CATCH error sentencia_compuesta_try END  (5)
-
-	error  shift 91
-	CATCH  shift 92
-	.  error
-
-
-state 49
-	sentencia_try : seleccion . ';'  (79)
-	sentencia_try : seleccion . error  (80)
-
-	error  shift 93
-	';'  shift 94
-	.  error
-
-
-state 50
-	sentencia_try : print . error  (81)
-	sentencia_try : print . ';'  (82)
-
-	error  shift 95
-	';'  shift 96
-	.  error
-
-
-state 51
-	sentencia_try : iteracion .  (83)
-
-	.  reduce 83
-
-
-state 52
-	sentencia_simple : bloque_try error .  (73)
-
-	.  reduce 73
-
-
-state 53
-	sentencia_simple : bloque_try ';' .  (72)
-
-	.  reduce 72
-
-
-state 54
-	bloque_sentencias : sentencia_declarativa error . sentencia_compuesta END ';'  (11)
-	declaracion_var : error . lista_var  (23)
-
-	error  shift 25
-	ID  shift 26
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_compuesta  goto 97
-	sentencia_simple  goto 29
-	lista_var  goto 30
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 55
-	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta END ';'  (6)
-	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta END error  (7)
-	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta error ';'  (8)
-
-	error  shift 40
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_compuesta  goto 98
-	sentencia_simple  goto 29
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 56
-	sentencia_declarativa : sentencia_declarativa declaracion . ';'  (15)
-	sentencia_declarativa : sentencia_declarativa declaracion . error  (16)
-
-	error  shift 99
-	';'  shift 100
-	.  error
-
-
-state 57
-	sentencia_declarativa : declaracion error .  (18)
-
-	.  reduce 18
-
-
-state 58
-	sentencia_declarativa : declaracion ';' .  (17)
-
-	.  reduce 17
-
-
-state 59
-	declaracion_func : tipo FUNC . ID '(' parametro ')' cuerpo_func  (29)
-
-	ID  shift 101
-	.  error
-
-
-state 60
-	declaracion_var : tipo lista_var .  (21)
-	lista_var : lista_var . ',' ID  (26)
-
-	','  shift 75
-	error  reduce 21
-	';'  reduce 21
-
-
-state 61
-	sentencia_simple : seleccion error .  (66)
-
-	.  reduce 66
-
-
-state 62
-	sentencia_simple : seleccion ';' .  (65)
-
-	.  reduce 65
-
-
-state 63
-	sentencia_simple : print error .  (67)
-
-	.  reduce 67
-
-
-state 64
-	sentencia_simple : print ';' .  (68)
-
-	.  reduce 68
-
-
-state 65
-	factor : ID .  (55)
-	factor : ID . '(' parametro ')'  (58)
-
-	'('  shift 102
-	error  reduce 55
-	"OR"  reduce 55
-	"AND"  reduce 55
-	'>'  reduce 55
-	'<'  reduce 55
-	"DISTINTO"  reduce 55
-	"MAYOR_IGUAL"  reduce 55
-	"MENOR_IGUAL"  reduce 55
-	"IGUAL"  reduce 55
-	'+'  reduce 55
-	'-'  reduce 55
-	'*'  reduce 55
-	'/'  reduce 55
-	';'  reduce 55
-	')'  reduce 55
-
-
-state 66
-	factor : CTE .  (57)
-
-	.  reduce 57
-
-
-state 67
-	factor : ERROR .  (59)
-
-	.  reduce 59
-
-
-state 68
-	factor : '-' . CTE  (56)
-	factor : '-' . ERROR  (60)
-
-	CTE  shift 103
-	ERROR  shift 104
-	.  error
-
-
-state 69
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	condicion : expresion . operadores expresion  (98)
-	condicion : expresion .  (99)
-
-	"OR"  shift 105
-	"AND"  shift 106
-	'>'  shift 107
-	'<'  shift 108
-	"DISTINTO"  shift 109
-	"MAYOR_IGUAL"  shift 110
-	"MENOR_IGUAL"  shift 111
-	"IGUAL"  shift 112
-	'+'  shift 113
-	'-'  shift 114
-	error  reduce 99
-	')'  reduce 99
-
-	operadores  goto 115
-
-
-state 70
-	seleccion : error '(' condicion . ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error '(' condicion . ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error '(' condicion . ')' DO bloque_sentencias  (113)
-
-	')'  shift 116
-	.  error
-
-
-state 71
-	expresion : termino .  (51)
-	termino : termino . '*' factor  (52)
-	termino : termino . '/' factor  (53)
-
-	'*'  shift 117
-	'/'  shift 118
-	error  reduce 51
-	"OR"  reduce 51
-	"AND"  reduce 51
-	'>'  reduce 51
-	'<'  reduce 51
-	"DISTINTO"  reduce 51
-	"MAYOR_IGUAL"  reduce 51
-	"MENOR_IGUAL"  reduce 51
-	"IGUAL"  reduce 51
-	'+'  reduce 51
-	'-'  reduce 51
-	';'  reduce 51
-	')'  reduce 51
-
-
-state 72
-	termino : factor .  (54)
-
-	.  reduce 54
-
-
-state 73
-	bloque_sentencias : error sentencia_compuesta END . ';'  (12)
-
-	';'  shift 119
-	.  error
-
-
-state 74
-	sentencia_compuesta : sentencia_compuesta sentencia_simple .  (61)
-
-	.  reduce 61
-
-
-state 75
-	lista_var : lista_var ',' . ID  (26)
-
-	ID  shift 120
-	.  error
-
-
-state 76
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	sentencia_simple : ID ASIG expresion . ';'  (63)
-
-	'+'  shift 113
-	'-'  shift 114
-	';'  shift 121
-	.  error
-
-
-state 77
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	sentencia_simple : ID ERROR expresion . ';'  (64)
-
-	'+'  shift 113
-	'-'  shift 114
-	';'  shift 122
-	.  error
-
-
-state 78
-	seleccion : IF error condicion . ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF error condicion . ')' THEN bloque_sentencias ENDIF  (92)
-
-	')'  shift 123
-	.  error
-
-
-state 79
-	seleccion : IF '(' condicion . ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' condicion . error THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF '(' condicion . ')' THEN bloque_sentencias ELSE bloque_sentencias error  (89)
-	seleccion : IF '(' condicion . ')' THEN bloque_sentencias ENDIF  (90)
-	seleccion : IF '(' condicion . ')' error bloque_sentencias ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF '(' condicion . error THEN bloque_sentencias ENDIF  (93)
-	seleccion : IF '(' condicion . ')' error bloque_sentencias ENDIF  (94)
-	seleccion : IF '(' condicion . ')' THEN bloque_sentencias error  (95)
-
-	error  shift 124
-	')'  shift 125
-	.  error
-
-
-state 80
-	print : PRINT error CADENA . ')'  (111)
-
-	')'  shift 126
-	.  error
-
-
-state 81
-	print : PRINT '(' error . ')'  (110)
-
-	')'  shift 127
-	.  error
-
-
-state 82
-	print : PRINT '(' CADENA . ')'  (108)
-	print : PRINT '(' CADENA . error  (109)
-
-	error  shift 128
-	')'  shift 129
-	.  error
-
-
-state 83
-	bloque_sentencias : BEGIN sentencia_compuesta error . ';'  (13)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
-
-	';'  shift 130
-	'('  shift 27
-	.  error
-
-
-state 84
-	bloque_sentencias : BEGIN sentencia_compuesta END . ';'  (9)
-	bloque_sentencias : BEGIN sentencia_compuesta END . error  (14)
-
-	error  shift 131
-	';'  shift 132
-	.  error
-
-
-state 85
-	iteracion : WHILE error condicion . ')' DO bloque_sentencias  (115)
-
-	')'  shift 133
-	.  error
-
-
-state 86
-	iteracion : WHILE '(' condicion . ')' DO bloque_sentencias  (112)
-	iteracion : WHILE '(' condicion . ')' error bloque_sentencias  (114)
-	iteracion : WHILE '(' condicion . error DO bloque_sentencias  (116)
-
-	error  shift 134
-	')'  shift 135
-	.  error
-
-
-state 87
-	sentencia_try : ID error . expresion ';'  (77)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 136
-	termino  goto 71
-	factor  goto 72
-
-
-state 88
-	sentencia_try : ID ASIG . expresion ';'  (76)
-	sentencia_try : ID ASIG . expresion error  (78)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 137
-	termino  goto 71
-	factor  goto 72
-
-
-state 89
-	sentencia_try : BREAK error .  (85)
-
-	.  reduce 85
-
-
-state 90
-	sentencia_try : BREAK ';' .  (84)
-
-	.  reduce 84
-
-
-state 91
-	bloque_try : TRY sentencia_try error . BEGIN sentencia_compuesta_try END  (3)
-
-	BEGIN  shift 138
-	.  error
-
-
-state 92
-	bloque_try : TRY sentencia_try CATCH . BEGIN sentencia_compuesta_try END  (2)
-	bloque_try : TRY sentencia_try CATCH . BEGIN sentencia_compuesta_try error  (4)
-	bloque_try : TRY sentencia_try CATCH . error sentencia_compuesta_try END  (5)
-
-	error  shift 139
-	BEGIN  shift 140
-	.  error
-
-
-state 93
-	sentencia_try : seleccion error .  (80)
-
-	.  reduce 80
-
-
-state 94
-	sentencia_try : seleccion ';' .  (79)
-
-	.  reduce 79
-
-
-state 95
-	sentencia_try : print error .  (81)
-
-	.  reduce 81
-
-
-state 96
-	sentencia_try : print ';' .  (82)
-
-	.  reduce 82
-
-
-state 97
-	bloque_sentencias : sentencia_declarativa error sentencia_compuesta . END ';'  (11)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
-
-	error  shift 40
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 141
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 98
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . END ';'  (6)
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . END error  (7)
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . error ';'  (8)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
-
-	error  shift 142
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 143
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 99
-	sentencia_declarativa : sentencia_declarativa declaracion error .  (16)
-
-	.  reduce 16
-
-
-state 100
-	sentencia_declarativa : sentencia_declarativa declaracion ';' .  (15)
-
-	.  reduce 15
-
-
-state 101
-	declaracion_func : tipo FUNC ID . '(' parametro ')' cuerpo_func  (29)
-
-	'('  shift 144
-	.  error
-
-
-state 102
-	factor : ID '(' . parametro ')'  (58)
-
-	ULONG  shift 10
-	DOUBLE  shift 11
-	.  error
-
-	tipo  goto 145
-	parametro  goto 146
-
-
-state 103
-	factor : '-' CTE .  (56)
-
-	.  reduce 56
-
-
-state 104
-	factor : '-' ERROR .  (60)
-
-	.  reduce 60
-
-
-state 105
-	operadores : "OR" .  (107)
-
-	.  reduce 107
-
-
-state 106
-	operadores : "AND" .  (106)
-
-	.  reduce 106
-
-
-state 107
-	operadores : '>' .  (100)
-
-	.  reduce 100
-
-
-state 108
-	operadores : '<' .  (103)
-
-	.  reduce 103
-
-
-state 109
-	operadores : "DISTINTO" .  (105)
-
-	.  reduce 105
-
-
-state 110
-	operadores : "MAYOR_IGUAL" .  (101)
-
-	.  reduce 101
-
-
-state 111
-	operadores : "MENOR_IGUAL" .  (102)
-
-	.  reduce 102
-
-
-state 112
-	operadores : "IGUAL" .  (104)
-
-	.  reduce 104
-
-
-state 113
-	expresion : expresion '+' . termino  (49)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	termino  goto 147
-	factor  goto 72
-
-
-state 114
-	expresion : expresion '-' . termino  (50)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	termino  goto 148
-	factor  goto 72
-
-
-state 115
-	condicion : expresion operadores . expresion  (98)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 149
-	termino  goto 71
-	factor  goto 72
-
-
-state 116
-	seleccion : error '(' condicion ')' . THEN bloque_sentencias ENDIF  (96)
-	seleccion : error '(' condicion ')' . THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error '(' condicion ')' . DO bloque_sentencias  (113)
-
-	THEN  shift 150
-	DO  shift 151
-	.  error
-
-
-state 117
-	termino : termino '*' . factor  (52)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	factor  goto 152
-
-
-state 118
-	termino : termino '/' . factor  (53)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	factor  goto 153
-
-
-state 119
-	bloque_sentencias : error sentencia_compuesta END ';' .  (12)
-
-	.  reduce 12
-
-
-state 120
-	lista_var : lista_var ',' ID .  (26)
-
-	.  reduce 26
-
-
-state 121
-	sentencia_simple : ID ASIG expresion ';' .  (63)
-
-	.  reduce 63
-
-
-state 122
-	sentencia_simple : ID ERROR expresion ';' .  (64)
-
-	.  reduce 64
-
-
-state 123
-	seleccion : IF error condicion ')' . THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF error condicion ')' . THEN bloque_sentencias ENDIF  (92)
-
-	THEN  shift 154
-	.  error
-
-
-state 124
-	seleccion : IF '(' condicion error . THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF '(' condicion error . THEN bloque_sentencias ENDIF  (93)
-
-	THEN  shift 155
-	.  error
-
-
-state 125
-	seleccion : IF '(' condicion ')' . THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' condicion ')' . THEN bloque_sentencias ELSE bloque_sentencias error  (89)
-	seleccion : IF '(' condicion ')' . THEN bloque_sentencias ENDIF  (90)
-	seleccion : IF '(' condicion ')' . error bloque_sentencias ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF '(' condicion ')' . error bloque_sentencias ENDIF  (94)
-	seleccion : IF '(' condicion ')' . THEN bloque_sentencias error  (95)
-
-	error  shift 156
-	THEN  shift 157
-	.  error
-
-
-state 126
-	print : PRINT error CADENA ')' .  (111)
-
-	.  reduce 111
-
-
-state 127
-	print : PRINT '(' error ')' .  (110)
-
-	.  reduce 110
-
-
-state 128
-	print : PRINT '(' CADENA error .  (109)
-
-	.  reduce 109
-
-
-state 129
-	print : PRINT '(' CADENA ')' .  (108)
-
-	.  reduce 108
-
-
-state 130
-	bloque_sentencias : BEGIN sentencia_compuesta error ';' .  (13)
-
-	.  reduce 13
-
-
-state 131
-	bloque_sentencias : BEGIN sentencia_compuesta END error .  (14)
-
-	.  reduce 14
-
-
-state 132
-	bloque_sentencias : BEGIN sentencia_compuesta END ';' .  (9)
-
-	.  reduce 9
-
-
-state 133
-	iteracion : WHILE error condicion ')' . DO bloque_sentencias  (115)
-
-	DO  shift 158
-	.  error
-
-
-state 134
-	iteracion : WHILE '(' condicion error . DO bloque_sentencias  (116)
-
-	DO  shift 159
-	.  error
-
-
-state 135
-	iteracion : WHILE '(' condicion ')' . DO bloque_sentencias  (112)
-	iteracion : WHILE '(' condicion ')' . error bloque_sentencias  (114)
-
-	error  shift 160
-	DO  shift 161
-	.  error
-
-
-state 136
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	sentencia_try : ID error expresion . ';'  (77)
-
-	'+'  shift 113
-	'-'  shift 114
-	';'  shift 162
-	.  error
-
-
-state 137
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	sentencia_try : ID ASIG expresion . ';'  (76)
-	sentencia_try : ID ASIG expresion . error  (78)
-
-	error  shift 163
-	'+'  shift 113
-	'-'  shift 114
-	';'  shift 164
-	.  error
-
-
-state 138
-	bloque_try : TRY sentencia_try error BEGIN . sentencia_compuesta_try END  (3)
-
-	error  shift 40
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 165
-	sentencia_compuesta_try  goto 166
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 139
-	bloque_try : TRY sentencia_try CATCH error . sentencia_compuesta_try END  (5)
-
-	error  shift 40
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 165
-	sentencia_compuesta_try  goto 167
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 140
-	bloque_try : TRY sentencia_try CATCH BEGIN . sentencia_compuesta_try END  (2)
-	bloque_try : TRY sentencia_try CATCH BEGIN . sentencia_compuesta_try error  (4)
-
-	error  shift 40
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 165
-	sentencia_compuesta_try  goto 168
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 141
-	bloque_sentencias : sentencia_declarativa error sentencia_compuesta END . ';'  (11)
-
-	';'  shift 169
-	.  error
-
-
-state 142
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta error . ';'  (8)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
-
-	';'  shift 170
-	'('  shift 27
-	.  error
-
-
-state 143
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END . ';'  (6)
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END . error  (7)
-
-	error  shift 171
-	';'  shift 172
-	.  error
-
-
-state 144
-	declaracion_func : tipo FUNC ID '(' . parametro ')' cuerpo_func  (29)
-
-	ULONG  shift 10
-	DOUBLE  shift 11
-	.  error
-
-	tipo  goto 145
-	parametro  goto 173
-
-
-state 145
-	parametro : tipo . ID  (30)
-
-	ID  shift 174
-	.  error
-
-
-state 146
-	factor : ID '(' parametro . ')'  (58)
-
-	')'  shift 175
-	.  error
-
-
-state 147
-	expresion : expresion '+' termino .  (49)
-	termino : termino . '*' factor  (52)
-	termino : termino . '/' factor  (53)
-
-	'*'  shift 117
-	'/'  shift 118
-	error  reduce 49
-	"OR"  reduce 49
-	"AND"  reduce 49
-	'>'  reduce 49
-	'<'  reduce 49
-	"DISTINTO"  reduce 49
-	"MAYOR_IGUAL"  reduce 49
-	"MENOR_IGUAL"  reduce 49
-	"IGUAL"  reduce 49
-	'+'  reduce 49
-	'-'  reduce 49
-	';'  reduce 49
-	')'  reduce 49
-
-
-state 148
-	expresion : expresion '-' termino .  (50)
-	termino : termino . '*' factor  (52)
-	termino : termino . '/' factor  (53)
-
-	'*'  shift 117
-	'/'  shift 118
-	error  reduce 50
-	"OR"  reduce 50
-	"AND"  reduce 50
-	'>'  reduce 50
-	'<'  reduce 50
-	"DISTINTO"  reduce 50
-	"MAYOR_IGUAL"  reduce 50
-	"MENOR_IGUAL"  reduce 50
-	"IGUAL"  reduce 50
-	'+'  reduce 50
-	'-'  reduce 50
-	';'  reduce 50
-	')'  reduce 50
-
-
-state 149
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-	condicion : expresion operadores expresion .  (98)
-
-	'+'  shift 113
-	'-'  shift 114
-	error  reduce 98
-	')'  reduce 98
-
-
-state 150
-	seleccion : error '(' condicion ')' THEN . bloque_sentencias ENDIF  (96)
-	seleccion : error '(' condicion ')' THEN . bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 176
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 151
-	iteracion : error '(' condicion ')' DO . bloque_sentencias  (113)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 177
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 152
-	termino : termino '*' factor .  (52)
-
-	.  reduce 52
-
-
-state 153
-	termino : termino '/' factor .  (53)
-
-	.  reduce 53
-
-
-state 154
-	seleccion : IF error condicion ')' THEN . bloque_sentencias ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF error condicion ')' THEN . bloque_sentencias ENDIF  (92)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 178
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 155
-	seleccion : IF '(' condicion error THEN . bloque_sentencias ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF '(' condicion error THEN . bloque_sentencias ENDIF  (93)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 179
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 156
-	seleccion : IF '(' condicion ')' error . bloque_sentencias ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF '(' condicion ')' error . bloque_sentencias ENDIF  (94)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 180
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 157
-	seleccion : IF '(' condicion ')' THEN . bloque_sentencias ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' condicion ')' THEN . bloque_sentencias ELSE bloque_sentencias error  (89)
-	seleccion : IF '(' condicion ')' THEN . bloque_sentencias ENDIF  (90)
-	seleccion : IF '(' condicion ')' THEN . bloque_sentencias error  (95)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 181
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 158
-	iteracion : WHILE error condicion ')' DO . bloque_sentencias  (115)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 182
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 159
-	iteracion : WHILE '(' condicion error DO . bloque_sentencias  (116)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 183
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 160
-	iteracion : WHILE '(' condicion ')' error . bloque_sentencias  (114)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 184
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 161
-	iteracion : WHILE '(' condicion ')' DO . bloque_sentencias  (112)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 185
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 162
-	sentencia_try : ID error expresion ';' .  (77)
-
-	.  reduce 77
-
-
-state 163
-	sentencia_try : ID ASIG expresion error .  (78)
-
-	.  reduce 78
-
-
-state 164
-	sentencia_try : ID ASIG expresion ';' .  (76)
-
-	.  reduce 76
-
-
-state 165
-	sentencia_compuesta_try : sentencia_try .  (75)
-
-	.  reduce 75
-
-
-state 166
-	bloque_try : TRY sentencia_try error BEGIN sentencia_compuesta_try . END  (3)
-	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (74)
-
-	error  shift 40
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 186
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 187
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 167
-	bloque_try : TRY sentencia_try CATCH error sentencia_compuesta_try . END  (5)
-	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (74)
-
-	error  shift 40
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 188
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 187
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 168
-	bloque_try : TRY sentencia_try CATCH BEGIN sentencia_compuesta_try . END  (2)
-	bloque_try : TRY sentencia_try CATCH BEGIN sentencia_compuesta_try . error  (4)
-	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (74)
-
-	error  shift 189
-	ID  shift 46
-	IF  shift 5
-	PRINT  shift 6
-	END  shift 190
-	BREAK  shift 47
-	WHILE  shift 12
-	.  error
-
-	sentencia_try  goto 187
-	seleccion  goto 49
-	print  goto 50
-	iteracion  goto 51
-
-
-state 169
-	bloque_sentencias : sentencia_declarativa error sentencia_compuesta END ';' .  (11)
-
-	.  reduce 11
-
-
-state 170
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta error ';' .  (8)
-
-	.  reduce 8
-
-
-state 171
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END error .  (7)
-
-	.  reduce 7
-
-
-state 172
-	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END ';' .  (6)
-
-	.  reduce 6
-
-
-state 173
-	declaracion_func : tipo FUNC ID '(' parametro . ')' cuerpo_func  (29)
-
-	')'  shift 191
-	.  error
-
-
-state 174
-	parametro : tipo ID .  (30)
-
-	.  reduce 30
-
-
-state 175
-	factor : ID '(' parametro ')' .  (58)
-
-	.  reduce 58
-
-
-state 176
-	seleccion : error '(' condicion ')' THEN bloque_sentencias . ENDIF  (96)
-	seleccion : error '(' condicion ')' THEN bloque_sentencias . ELSE bloque_sentencias ENDIF  (97)
-
-	ELSE  shift 192
-	ENDIF  shift 193
-	.  error
-
-
-state 177
-	iteracion : error '(' condicion ')' DO bloque_sentencias .  (113)
-
-	.  reduce 113
-
-
-state 178
-	seleccion : IF error condicion ')' THEN bloque_sentencias . ELSE bloque_sentencias ENDIF  (87)
-	seleccion : IF error condicion ')' THEN bloque_sentencias . ENDIF  (92)
-
-	ELSE  shift 194
-	ENDIF  shift 195
-	.  error
-
-
-state 179
-	seleccion : IF '(' condicion error THEN bloque_sentencias . ELSE bloque_sentencias ENDIF  (88)
-	seleccion : IF '(' condicion error THEN bloque_sentencias . ENDIF  (93)
-
-	ELSE  shift 196
-	ENDIF  shift 197
-	.  error
-
-
-state 180
-	seleccion : IF '(' condicion ')' error bloque_sentencias . ELSE bloque_sentencias ENDIF  (91)
-	seleccion : IF '(' condicion ')' error bloque_sentencias . ENDIF  (94)
-
-	ELSE  shift 198
-	ENDIF  shift 199
-	.  error
-
-
-state 181
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias . ELSE bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias . ELSE bloque_sentencias error  (89)
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias . ENDIF  (90)
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias . error  (95)
-
-	error  shift 200
-	ELSE  shift 201
-	ENDIF  shift 202
-	.  error
-
-
-state 182
-	iteracion : WHILE error condicion ')' DO bloque_sentencias .  (115)
-
-	.  reduce 115
-
-
-state 183
-	iteracion : WHILE '(' condicion error DO bloque_sentencias .  (116)
-
-	.  reduce 116
-
-
-state 184
-	iteracion : WHILE '(' condicion ')' error bloque_sentencias .  (114)
-
-	.  reduce 114
-
-
-state 185
-	iteracion : WHILE '(' condicion ')' DO bloque_sentencias .  (112)
-
-	.  reduce 112
-
-
-state 186
-	bloque_try : TRY sentencia_try error BEGIN sentencia_compuesta_try END .  (3)
-
-	.  reduce 3
-
-
-state 187
-	sentencia_compuesta_try : sentencia_compuesta_try sentencia_try .  (74)
-
-	.  reduce 74
-
-
-state 188
-	bloque_try : TRY sentencia_try CATCH error sentencia_compuesta_try END .  (5)
-
-	.  reduce 5
-
-
-state 189
-	bloque_try : TRY sentencia_try CATCH BEGIN sentencia_compuesta_try error .  (4)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ENDIF  (96)
-	seleccion : error . '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF  (97)
-	iteracion : error . '(' condicion ')' DO bloque_sentencias  (113)
-
-	'('  shift 27
-	error  reduce 4
-	';'  reduce 4
-
-
-state 190
-	bloque_try : TRY sentencia_try CATCH BEGIN sentencia_compuesta_try END .  (2)
-
-	.  reduce 2
-
-
-state 191
-	declaracion_func : tipo FUNC ID '(' parametro ')' . cuerpo_func  (29)
-
-	error  shift 203
-	FUNC  shift 7
-	BEGIN  shift 204
-	ULONG  shift 10
-	DOUBLE  shift 11
-	.  error
-
-	sentencia_declarativa  goto 205
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	cuerpo_func  goto 206
-
-
-state 192
-	seleccion : error '(' condicion ')' THEN bloque_sentencias ELSE . bloque_sentencias ENDIF  (97)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 207
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 193
-	seleccion : error '(' condicion ')' THEN bloque_sentencias ENDIF .  (96)
-
-	.  reduce 96
-
-
-state 194
-	seleccion : IF error condicion ')' THEN bloque_sentencias ELSE . bloque_sentencias ENDIF  (87)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 208
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 195
-	seleccion : IF error condicion ')' THEN bloque_sentencias ENDIF .  (92)
-
-	.  reduce 92
-
-
-state 196
-	seleccion : IF '(' condicion error THEN bloque_sentencias ELSE . bloque_sentencias ENDIF  (88)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 209
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 197
-	seleccion : IF '(' condicion error THEN bloque_sentencias ENDIF .  (93)
-
-	.  reduce 93
-
-
-state 198
-	seleccion : IF '(' condicion ')' error bloque_sentencias ELSE . bloque_sentencias ENDIF  (91)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 210
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 199
-	seleccion : IF '(' condicion ')' error bloque_sentencias ENDIF .  (94)
-
-	.  reduce 94
-
-
-state 200
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias error .  (95)
-
-	.  reduce 95
-
-
-state 201
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE . bloque_sentencias ENDIF  (86)
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE . bloque_sentencias error  (89)
-
-	error  shift 3
-	ID  shift 4
-	IF  shift 5
-	PRINT  shift 6
-	FUNC  shift 7
-	BEGIN  shift 8
-	BREAK  shift 9
-	ULONG  shift 10
-	DOUBLE  shift 11
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_sentencias  goto 211
-	bloque_try  goto 15
-	sentencia_declarativa  goto 16
-	sentencia_simple  goto 17
-	declaracion  goto 18
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 202
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ENDIF .  (90)
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 32
+	sentencia_compuesta : sentencia_simple .  (90)
 
 	.  reduce 90
 
 
-state 203
-	declaracion_var : error . lista_var  (23)
-	cuerpo_func : error . sentencia_compuesta RETURN '(' expresion ')' ';' END  (37)
+state 33
+	declaracion_var : error lista_var .  (32)
+	lista_var : lista_var . ',' ID  (35)
 
-	error  shift 25
-	ID  shift 26
-	IF  shift 5
-	PRINT  shift 6
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
+	','  shift 85
+	error  reduce 32
+	';'  reduce 32
+
+
+state 34
+	seleccion : error cond . THEN cuerpo_if ENDIF  (121)
+	iteracion : error cond . cuerpo_while  (145)
+
+	error  shift 86
+	THEN  shift 87
+	DO  shift 88
 	.  error
 
-	bloque_try  goto 15
-	sentencia_compuesta  goto 212
-	sentencia_simple  goto 29
-	lista_var  goto 30
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	cuerpo_while  goto 89
 
 
-state 204
-	cuerpo_func : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' END  (36)
-	cuerpo_func : BEGIN . sentencia_compuesta RETURN error expresion ')' ';' END  (38)
-	cuerpo_func : BEGIN . sentencia_compuesta RETURN '(' expresion error ';' END  (39)
-	cuerpo_func : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error  (40)
+state 35
+	sentencia_simple : ID ASIG . expresion ';' $$7  (92)
+	sentencia_simple : ID ASIG . error ';'  (93)
 
-	error  shift 40
+	error  shift 90
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 91
+	termino  goto 81
+	factor  goto 82
+
+
+state 36
+	sentencia_simple : ID ERROR . expresion ';'  (94)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 92
+	termino  goto 81
+	factor  goto 82
+
+
+state 37
+	seleccion : IF error . THEN cuerpo_if ENDIF  (122)
+
+	THEN  shift 93
+	.  error
+
+
+state 38
+	seleccion : IF cond . THEN cuerpo_if ENDIF $$9  (118)
+	seleccion : IF cond . error cuerpo_if ENDIF  (119)
+	seleccion : IF cond . THEN cuerpo_if error  (120)
+
+	error  shift 94
+	THEN  shift 95
+	.  error
+
+
+state 39
+	print : PRINT error . CADENA ')'  (142)
+
+	CADENA  shift 96
+	.  error
+
+
+state 40
+	print : PRINT '(' . CADENA ')' $$10  (139)
+	print : PRINT '(' . CADENA error  (140)
+	print : PRINT '(' . error ')'  (141)
+
+	error  shift 97
+	CADENA  shift 98
+	.  error
+
+
+state 41
+	declaracion_var : FUNC $$2 . lista_var  (31)
+
+	error  shift 63
+	ID  shift 64
+	.  error
+
+	lista_var  goto 99
+
+
+state 42
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
+
+	'('  shift 30
+	.  error
+
+	cond  goto 34
+
+
+state 43
+	bloque_sentencias : BEGIN END . ';'  (21)
+
+	';'  shift 100
+	.  error
+
+
+state 44
+	bloque_sentencias : BEGIN sentencia_compuesta . END ';'  (17)
+	bloque_sentencias : BEGIN sentencia_compuesta . error ';'  (19)
+	bloque_sentencias : BEGIN sentencia_compuesta . END error  (20)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 101
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
+	END  shift 102
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
 	bloque_try  goto 15
-	sentencia_compuesta  goto 213
-	sentencia_simple  goto 29
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
-state 205
-	sentencia_declarativa : sentencia_declarativa . declaracion ';'  (15)
-	sentencia_declarativa : sentencia_declarativa . declaracion error  (16)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa . error sentencia_compuesta RETURN '(' expresion ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN error expresion ')' ';' END  (33)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion error ';' END  (34)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa . error RETURN '(' expresion ')' ';' END  (41)
-	cuerpo_func : sentencia_declarativa . BEGIN RETURN error expresion ')' ';' END  (42)
-	cuerpo_func : sentencia_declarativa . BEGIN RETURN '(' expresion error ';' END  (43)
-	cuerpo_func : sentencia_declarativa . BEGIN RETURN '(' expresion ')' ';' error  (44)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa . error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (46)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (48)
+state 45
+	sentencia_simple : BREAK error .  (101)
 
-	error  shift 214
-	FUNC  shift 7
-	BEGIN  shift 215
+	.  reduce 101
+
+
+state 46
+	sentencia_simple : BREAK ';' .  (100)
+
+	.  reduce 100
+
+
+state 47
+	sentencia_try : ID . ASIG expresion ';' $$8  (107)
+	sentencia_try : ID . error expresion ';'  (108)
+	sentencia_try : ID . ASIG expresion error  (109)
+
+	error  shift 103
+	ASIG  shift 104
+	.  error
+
+
+state 48
+	sentencia_try : BREAK . ';'  (115)
+	sentencia_try : BREAK . error  (116)
+
+	error  shift 105
+	';'  shift 106
+	.  error
+
+
+state 49
+	bloque_try_comienzo : TRY sentencia_try . $$1  (4)
+	$$1 : .  (3)
+
+	.  reduce 3
+
+	$$1  goto 107
+
+
+state 50
+	sentencia_try : seleccion . ';'  (110)
+	sentencia_try : seleccion . error  (111)
+
+	error  shift 108
+	';'  shift 109
+	.  error
+
+
+state 51
+	sentencia_try : print . error  (112)
+	sentencia_try : print . ';'  (113)
+
+	error  shift 110
+	';'  shift 111
+	.  error
+
+
+state 52
+	sentencia_try : iteracion .  (114)
+
+	.  reduce 114
+
+
+state 53
+	sentencia_simple : bloque_try error .  (103)
+
+	.  reduce 103
+
+
+state 54
+	sentencia_simple : bloque_try ';' .  (102)
+
+	.  reduce 102
+
+
+state 55
+	bloque_catch : error . BEGIN sentencia_compuesta_try END  (6)
+
+	BEGIN  shift 112
+	.  error
+
+
+state 56
+	bloque_catch : CATCH . BEGIN sentencia_compuesta_try END  (5)
+	bloque_catch : CATCH . BEGIN sentencia_compuesta_try error  (7)
+	bloque_catch : CATCH . error sentencia_compuesta_try END  (8)
+
+	error  shift 113
+	BEGIN  shift 114
+	.  error
+
+
+state 57
+	bloque_try : bloque_try_comienzo bloque_catch .  (2)
+
+	.  reduce 2
+
+
+state 58
+	bloque_sentencias : sentencia_declarativa error . sentencia_compuesta END ';'  (12)
+	bloque_sentencias : sentencia_declarativa error . END ';'  (14)
+	declaracion_var : error . lista_var  (32)
+
+	error  shift 28
+	ID  shift 29
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 115
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 116
+	sentencia_simple  goto 32
+	lista_var  goto 33
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 59
+	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta END ';'  (9)
+	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta END error  (10)
+	bloque_sentencias : sentencia_declarativa BEGIN . sentencia_compuesta error ';'  (11)
+	bloque_sentencias : sentencia_declarativa BEGIN . END ';'  (13)
+	bloque_sentencias : sentencia_declarativa BEGIN . error ';'  (15)
+	bloque_sentencias : sentencia_declarativa BEGIN . END error  (16)
+
+	error  shift 117
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 118
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 119
+	sentencia_simple  goto 32
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 60
+	sentencia_declarativa : sentencia_declarativa declaracion . ';'  (23)
+	sentencia_declarativa : sentencia_declarativa declaracion . error  (24)
+
+	error  shift 120
+	';'  shift 121
+	.  error
+
+
+state 61
+	sentencia_declarativa : declaracion error .  (26)
+
+	.  reduce 26
+
+
+state 62
+	sentencia_declarativa : declaracion ';' .  (25)
+
+	.  reduce 25
+
+
+state 63
+	lista_var : error .  (37)
+
+	.  reduce 37
+
+
+state 64
+	lista_var : ID .  (36)
+
+	.  reduce 36
+
+
+state 65
+	declaracion_func : tipo FUNC . ID $$3  (40)
+
+	ID  shift 122
+	.  error
+
+
+state 66
+	declaracion_var : tipo lista_var .  (29)
+	lista_var : lista_var . ',' ID  (35)
+
+	','  shift 85
+	error  reduce 29
+	';'  reduce 29
+
+
+state 67
+	parametro_func : '(' . parametro ')'  (41)
+
 	ULONG  shift 10
 	DOUBLE  shift 11
 	.  error
 
-	declaracion  goto 56
-	declaracion_var  goto 19
-	declaracion_func  goto 20
-	tipo  goto 21
+	tipo  goto 123
+	parametro  goto 124
 
 
-state 206
-	declaracion_func : tipo FUNC ID '(' parametro ')' cuerpo_func .  (29)
+state 68
+	func : declaracion_func parametro_func . cuerpo_func  (38)
 
-	.  reduce 29
+	error  shift 125
+	FUNC  shift 7
+	BEGIN  shift 126
+	ULONG  shift 10
+	DOUBLE  shift 11
+	.  error
+
+	sentencia_declarativa  goto 127
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	cuerpo_func  goto 128
+	cuerpo_func_error  goto 129
 
 
-state 207
-	seleccion : error '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias . ENDIF  (97)
+state 69
+	sentencia_simple : seleccion error .  (96)
 
-	ENDIF  shift 216
+	.  reduce 96
+
+
+state 70
+	sentencia_simple : seleccion ';' .  (95)
+
+	.  reduce 95
+
+
+state 71
+	sentencia_simple : print error .  (97)
+
+	.  reduce 97
+
+
+state 72
+	sentencia_simple : print ';' .  (98)
+
+	.  reduce 98
+
+
+state 73
+	iteracion : inicio_while error . cuerpo_while  (146)
+
+	error  shift 86
+	DO  shift 88
+	.  error
+
+	cuerpo_while  goto 130
+
+
+state 74
+	iteracion : inicio_while cond . cuerpo_while $$11  (144)
+
+	error  shift 86
+	DO  shift 88
+	.  error
+
+	cuerpo_while  goto 131
+
+
+state 75
+	factor : ID .  (79)
+	factor : ID . '(' parametro_inv ')'  (83)
+
+	'('  shift 132
+	error  reduce 79
+	"OR"  reduce 79
+	"AND"  reduce 79
+	'>'  reduce 79
+	'<'  reduce 79
+	"DISTINTO"  reduce 79
+	"MAYOR_IGUAL"  reduce 79
+	"MENOR_IGUAL"  reduce 79
+	"IGUAL"  reduce 79
+	'+'  reduce 79
+	'-'  reduce 79
+	'*'  reduce 79
+	'/'  reduce 79
+	';'  reduce 79
+	')'  reduce 79
+
+
+state 76
+	factor : CTE .  (82)
+
+	.  reduce 82
+
+
+state 77
+	factor : ERROR .  (84)
+
+	.  reduce 84
+
+
+state 78
+	factor : '-' . CTE $$6  (81)
+	factor : '-' . ERROR  (85)
+
+	CTE  shift 133
+	ERROR  shift 134
 	.  error
 
 
-state 208
-	seleccion : IF error condicion ')' THEN bloque_sentencias ELSE bloque_sentencias . ENDIF  (87)
+state 79
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	condicion : expresion .  (129)
 
-	ENDIF  shift 217
+	'+'  shift 135
+	'-'  shift 136
+	"OR"  reduce 129
+	"AND"  reduce 129
+	'>'  reduce 129
+	'<'  reduce 129
+	"DISTINTO"  reduce 129
+	"MAYOR_IGUAL"  reduce 129
+	"MENOR_IGUAL"  reduce 129
+	"IGUAL"  reduce 129
+	')'  reduce 129
+
+
+state 80
+	cond : '(' condicion . ')'  (127)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 145
+	.  error
+
+	operadores  goto 146
+
+
+state 81
+	expresion : termino .  (75)
+	termino : termino . '*' factor  (76)
+	termino : termino . '/' factor  (77)
+
+	'*'  shift 147
+	'/'  shift 148
+	error  reduce 75
+	"OR"  reduce 75
+	"AND"  reduce 75
+	'>'  reduce 75
+	'<'  reduce 75
+	"DISTINTO"  reduce 75
+	"MAYOR_IGUAL"  reduce 75
+	"MENOR_IGUAL"  reduce 75
+	"IGUAL"  reduce 75
+	'+'  reduce 75
+	'-'  reduce 75
+	';'  reduce 75
+	')'  reduce 75
+
+
+state 82
+	termino : factor .  (78)
+
+	.  reduce 78
+
+
+state 83
+	bloque_sentencias : error sentencia_compuesta END . ';'  (18)
+
+	';'  shift 149
 	.  error
 
 
-state 209
-	seleccion : IF '(' condicion error THEN bloque_sentencias ELSE bloque_sentencias . ENDIF  (88)
+state 84
+	sentencia_compuesta : sentencia_compuesta sentencia_simple .  (89)
 
-	ENDIF  shift 218
+	.  reduce 89
+
+
+state 85
+	lista_var : lista_var ',' . ID  (35)
+
+	ID  shift 150
 	.  error
 
 
-state 210
-	seleccion : IF '(' condicion ')' error bloque_sentencias ELSE bloque_sentencias . ENDIF  (91)
+state 86
+	cuerpo_while : error . bloque_sentencias  (149)
 
-	ENDIF  shift 219
-	.  error
-
-
-state 211
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias . ENDIF  (86)
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias . error  (89)
-
-	error  shift 220
-	ENDIF  shift 221
-	.  error
-
-
-state 212
-	cuerpo_func : error sentencia_compuesta . RETURN '(' expresion ')' ';' END  (37)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
-
-	error  shift 40
+	error  shift 3
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
-	RETURN  shift 222
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 151
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 87
+	seleccion : error cond THEN . cuerpo_if ENDIF  (121)
+
+	error  shift 3
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 152
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cuerpo_if  goto 153
+	cuerpo_then  goto 154
+	inicio_while  goto 27
+
+
+state 88
+	cuerpo_while : DO . bloque_sentencias  (148)
+
+	error  shift 3
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 155
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 89
+	iteracion : error cond cuerpo_while .  (145)
+
+	.  reduce 145
+
+
+state 90
+	sentencia_simple : ID ASIG error . ';'  (93)
+
+	';'  shift 156
+	.  error
+
+
+state 91
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	sentencia_simple : ID ASIG expresion . ';' $$7  (92)
+
+	'+'  shift 135
+	'-'  shift 136
+	';'  shift 157
+	.  error
+
+
+state 92
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	sentencia_simple : ID ERROR expresion . ';'  (94)
+
+	'+'  shift 135
+	'-'  shift 136
+	';'  shift 158
+	.  error
+
+
+state 93
+	seleccion : IF error THEN . cuerpo_if ENDIF  (122)
+
+	error  shift 3
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 152
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cuerpo_if  goto 159
+	cuerpo_then  goto 154
+	inicio_while  goto 27
+
+
+state 94
+	seleccion : IF cond error . cuerpo_if ENDIF  (119)
+
+	error  shift 3
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 152
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cuerpo_if  goto 160
+	cuerpo_then  goto 154
+	inicio_while  goto 27
+
+
+state 95
+	seleccion : IF cond THEN . cuerpo_if ENDIF $$9  (118)
+	seleccion : IF cond THEN . cuerpo_if error  (120)
+
+	error  shift 3
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	FUNC  shift 7
+	BEGIN  shift 8
+	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_sentencias  goto 152
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cuerpo_if  goto 161
+	cuerpo_then  goto 154
+	inicio_while  goto 27
+
+
+state 96
+	print : PRINT error CADENA . ')'  (142)
+
+	')'  shift 162
+	.  error
+
+
+state 97
+	print : PRINT '(' error . ')'  (141)
+
+	')'  shift 163
+	.  error
+
+
+state 98
+	print : PRINT '(' CADENA . ')' $$10  (139)
+	print : PRINT '(' CADENA . error  (140)
+
+	error  shift 164
+	')'  shift 165
+	.  error
+
+
+state 99
+	declaracion_var : FUNC $$2 lista_var .  (31)
+	lista_var : lista_var . ',' ID  (35)
+
+	','  shift 85
+	error  reduce 31
+	';'  reduce 31
+
+
+state 100
+	bloque_sentencias : BEGIN END ';' .  (21)
+
+	.  reduce 21
+
+
+state 101
+	bloque_sentencias : BEGIN sentencia_compuesta error . ';'  (19)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
+
+	';'  shift 166
+	'('  shift 30
+	.  error
+
+	cond  goto 34
+
+
+state 102
+	bloque_sentencias : BEGIN sentencia_compuesta END . ';'  (17)
+	bloque_sentencias : BEGIN sentencia_compuesta END . error  (20)
+
+	error  shift 167
+	';'  shift 168
+	.  error
+
+
+state 103
+	sentencia_try : ID error . expresion ';'  (108)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 169
+	termino  goto 81
+	factor  goto 82
+
+
+state 104
+	sentencia_try : ID ASIG . expresion ';' $$8  (107)
+	sentencia_try : ID ASIG . expresion error  (109)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 170
+	termino  goto 81
+	factor  goto 82
+
+
+state 105
+	sentencia_try : BREAK error .  (116)
+
+	.  reduce 116
+
+
+state 106
+	sentencia_try : BREAK ';' .  (115)
+
+	.  reduce 115
+
+
+state 107
+	bloque_try_comienzo : TRY sentencia_try $$1 .  (4)
+
+	.  reduce 4
+
+
+state 108
+	sentencia_try : seleccion error .  (111)
+
+	.  reduce 111
+
+
+state 109
+	sentencia_try : seleccion ';' .  (110)
+
+	.  reduce 110
+
+
+state 110
+	sentencia_try : print error .  (112)
+
+	.  reduce 112
+
+
+state 111
+	sentencia_try : print ';' .  (113)
+
+	.  reduce 113
+
+
+state 112
+	bloque_catch : error BEGIN . sentencia_compuesta_try END  (6)
+
+	error  shift 42
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 171
+	sentencia_compuesta_try  goto 172
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 113
+	bloque_catch : CATCH error . sentencia_compuesta_try END  (8)
+
+	error  shift 42
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 171
+	sentencia_compuesta_try  goto 173
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 114
+	bloque_catch : CATCH BEGIN . sentencia_compuesta_try END  (5)
+	bloque_catch : CATCH BEGIN . sentencia_compuesta_try error  (7)
+
+	error  shift 42
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 171
+	sentencia_compuesta_try  goto 174
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 115
+	bloque_sentencias : sentencia_declarativa error END . ';'  (14)
+
+	';'  shift 175
+	.  error
+
+
+state 116
+	bloque_sentencias : sentencia_declarativa error sentencia_compuesta . END ';'  (12)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 42
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 176
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
 	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
-state 213
-	cuerpo_func : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta . RETURN error expresion ')' ';' END  (38)
-	cuerpo_func : BEGIN sentencia_compuesta . RETURN '(' expresion error ';' END  (39)
-	cuerpo_func : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error  (40)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
+state 117
+	bloque_sentencias : sentencia_declarativa BEGIN error . ';'  (15)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
 
-	error  shift 40
+	';'  shift 177
+	'('  shift 30
+	.  error
+
+	cond  goto 34
+
+
+state 118
+	bloque_sentencias : sentencia_declarativa BEGIN END . ';'  (13)
+	bloque_sentencias : sentencia_declarativa BEGIN END . error  (16)
+
+	error  shift 178
+	';'  shift 179
+	.  error
+
+
+state 119
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . END ';'  (9)
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . END error  (10)
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta . error ';'  (11)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 180
 	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 181
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 120
+	sentencia_declarativa : sentencia_declarativa declaracion error .  (24)
+
+	.  reduce 24
+
+
+state 121
+	sentencia_declarativa : sentencia_declarativa declaracion ';' .  (23)
+
+	.  reduce 23
+
+
+state 122
+	declaracion_func : tipo FUNC ID . $$3  (40)
+	$$3 : .  (39)
+
+	.  reduce 39
+
+	$$3  goto 182
+
+
+state 123
+	parametro : tipo . ID  (42)
+
+	ID  shift 183
+	.  error
+
+
+state 124
+	parametro_func : '(' parametro . ')'  (41)
+
+	')'  shift 184
+	.  error
+
+
+state 125
+	declaracion_var : error . lista_var  (32)
+	cuerpo_func_error : error . sentencia_compuesta RETURN '(' expresion ')' ';' END  (56)
+
+	error  shift 28
+	ID  shift 29
+	IF  shift 5
+	PRINT  shift 6
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 185
+	sentencia_simple  goto 32
+	lista_var  goto 33
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 126
+	cuerpo_func : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' END  (44)
+	cuerpo_func : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN . sentencia_compuesta '(' expresion ')' ';' END  (57)
+	cuerpo_func_error : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error END  (58)
+	cuerpo_func_error : BEGIN . sentencia_compuesta RETURN error expresion ')' ';' END  (59)
+	cuerpo_func_error : BEGIN . sentencia_compuesta RETURN '(' expresion error ';' END  (60)
+	cuerpo_func_error : BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error  (61)
+
+	error  shift 42
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 186
+	sentencia_simple  goto 32
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 127
+	sentencia_declarativa : sentencia_declarativa . declaracion ';'  (23)
+	sentencia_declarativa : sentencia_declarativa . declaracion error  (24)
+	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa . BEGIN RETURN '(' expresion ')' ';' END  (45)
+	cuerpo_func : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa . error sentencia_compuesta RETURN '(' expresion ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN error expresion ')' ';' END  (53)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa . error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (62)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (63)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa . BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (66)
+	cuerpo_func_error : sentencia_declarativa . error RETURN '(' expresion ')' ';' END  (67)
+	cuerpo_func_error : sentencia_declarativa . BEGIN '(' expresion ')' ';' END  (68)
+	cuerpo_func_error : sentencia_declarativa . BEGIN RETURN '(' expresion ')' ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa . BEGIN RETURN error expresion ')' ';' END  (70)
+	cuerpo_func_error : sentencia_declarativa . BEGIN RETURN '(' expresion error ';' END  (71)
+	cuerpo_func_error : sentencia_declarativa . BEGIN RETURN '(' expresion ')' ';' error  (72)
+
+	error  shift 187
+	FUNC  shift 7
+	BEGIN  shift 188
+	ULONG  shift 10
+	DOUBLE  shift 11
+	.  error
+
+	declaracion  goto 60
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+
+
+state 128
+	func : declaracion_func parametro_func cuerpo_func .  (38)
+
+	.  reduce 38
+
+
+state 129
+	cuerpo_func : cuerpo_func_error .  (50)
+
+	.  reduce 50
+
+
+state 130
+	iteracion : inicio_while error cuerpo_while .  (146)
+
+	.  reduce 146
+
+
+state 131
+	iteracion : inicio_while cond cuerpo_while . $$11  (144)
+	$$11 : .  (143)
+
+	.  reduce 143
+
+	$$11  goto 189
+
+
+state 132
+	factor : ID '(' . parametro_inv ')'  (83)
+
+	ID  shift 190
+	CTE  shift 191
+	'-'  shift 192
+	.  error
+
+	parametro_inv  goto 193
+
+
+state 133
+	factor : '-' CTE . $$6  (81)
+	$$6 : .  (80)
+
+	.  reduce 80
+
+	$$6  goto 194
+
+
+state 134
+	factor : '-' ERROR .  (85)
+
+	.  reduce 85
+
+
+state 135
+	expresion : expresion '+' . termino  (73)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	termino  goto 195
+	factor  goto 82
+
+
+state 136
+	expresion : expresion '-' . termino  (74)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	termino  goto 196
+	factor  goto 82
+
+
+state 137
+	operadores : "OR" .  (137)
+
+	.  reduce 137
+
+
+state 138
+	operadores : "AND" .  (136)
+
+	.  reduce 136
+
+
+state 139
+	operadores : '>' .  (130)
+
+	.  reduce 130
+
+
+state 140
+	operadores : '<' .  (133)
+
+	.  reduce 133
+
+
+state 141
+	operadores : "DISTINTO" .  (135)
+
+	.  reduce 135
+
+
+state 142
+	operadores : "MAYOR_IGUAL" .  (131)
+
+	.  reduce 131
+
+
+state 143
+	operadores : "MENOR_IGUAL" .  (132)
+
+	.  reduce 132
+
+
+state 144
+	operadores : "IGUAL" .  (134)
+
+	.  reduce 134
+
+
+state 145
+	cond : '(' condicion ')' .  (127)
+
+	.  reduce 127
+
+
+state 146
+	condicion : condicion operadores . expresion  (128)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 197
+	termino  goto 81
+	factor  goto 82
+
+
+state 147
+	termino : termino '*' . factor  (76)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	factor  goto 198
+
+
+state 148
+	termino : termino '/' . factor  (77)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	factor  goto 199
+
+
+state 149
+	bloque_sentencias : error sentencia_compuesta END ';' .  (18)
+
+	.  reduce 18
+
+
+state 150
+	lista_var : lista_var ',' ID .  (35)
+
+	.  reduce 35
+
+
+state 151
+	cuerpo_while : error bloque_sentencias .  (149)
+
+	.  reduce 149
+
+
+state 152
+	cuerpo_then : bloque_sentencias .  (125)
+
+	.  reduce 125
+
+
+state 153
+	seleccion : error cond THEN cuerpo_if . ENDIF  (121)
+
+	ENDIF  shift 200
+	.  error
+
+
+state 154
+	cuerpo_if : cuerpo_then . ELSE cuerpo_else  (123)
+	cuerpo_if : cuerpo_then .  (124)
+
+	ELSE  shift 201
+	error  reduce 124
+	ENDIF  reduce 124
+
+
+state 155
+	cuerpo_while : DO bloque_sentencias .  (148)
+
+	.  reduce 148
+
+
+state 156
+	sentencia_simple : ID ASIG error ';' .  (93)
+
+	.  reduce 93
+
+
+state 157
+	sentencia_simple : ID ASIG expresion ';' . $$7  (92)
+	$$7 : .  (91)
+
+	.  reduce 91
+
+	$$7  goto 202
+
+
+state 158
+	sentencia_simple : ID ERROR expresion ';' .  (94)
+
+	.  reduce 94
+
+
+state 159
+	seleccion : IF error THEN cuerpo_if . ENDIF  (122)
+
+	ENDIF  shift 203
+	.  error
+
+
+state 160
+	seleccion : IF cond error cuerpo_if . ENDIF  (119)
+
+	ENDIF  shift 204
+	.  error
+
+
+state 161
+	seleccion : IF cond THEN cuerpo_if . ENDIF $$9  (118)
+	seleccion : IF cond THEN cuerpo_if . error  (120)
+
+	error  shift 205
+	ENDIF  shift 206
+	.  error
+
+
+state 162
+	print : PRINT error CADENA ')' .  (142)
+
+	.  reduce 142
+
+
+state 163
+	print : PRINT '(' error ')' .  (141)
+
+	.  reduce 141
+
+
+state 164
+	print : PRINT '(' CADENA error .  (140)
+
+	.  reduce 140
+
+
+state 165
+	print : PRINT '(' CADENA ')' . $$10  (139)
+	$$10 : .  (138)
+
+	.  reduce 138
+
+	$$10  goto 207
+
+
+state 166
+	bloque_sentencias : BEGIN sentencia_compuesta error ';' .  (19)
+
+	.  reduce 19
+
+
+state 167
+	bloque_sentencias : BEGIN sentencia_compuesta END error .  (20)
+
+	.  reduce 20
+
+
+state 168
+	bloque_sentencias : BEGIN sentencia_compuesta END ';' .  (17)
+
+	.  reduce 17
+
+
+state 169
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	sentencia_try : ID error expresion . ';'  (108)
+
+	'+'  shift 135
+	'-'  shift 136
+	';'  shift 208
+	.  error
+
+
+state 170
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	sentencia_try : ID ASIG expresion . ';' $$8  (107)
+	sentencia_try : ID ASIG expresion . error  (109)
+
+	error  shift 209
+	'+'  shift 135
+	'-'  shift 136
+	';'  shift 210
+	.  error
+
+
+state 171
+	sentencia_compuesta_try : sentencia_try .  (105)
+
+	.  reduce 105
+
+
+state 172
+	bloque_catch : error BEGIN sentencia_compuesta_try . END  (6)
+	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (104)
+
+	error  shift 42
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 211
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 212
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 173
+	bloque_catch : CATCH error sentencia_compuesta_try . END  (8)
+	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (104)
+
+	error  shift 42
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 213
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 212
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 174
+	bloque_catch : CATCH BEGIN sentencia_compuesta_try . END  (5)
+	bloque_catch : CATCH BEGIN sentencia_compuesta_try . error  (7)
+	sentencia_compuesta_try : sentencia_compuesta_try . sentencia_try  (104)
+
+	error  shift 214
+	ID  shift 47
+	IF  shift 5
+	PRINT  shift 6
+	END  shift 215
+	BREAK  shift 48
+	WHILE  shift 12
+	.  error
+
+	sentencia_try  goto 212
+	seleccion  goto 50
+	print  goto 51
+	iteracion  goto 52
+	inicio_while  goto 27
+
+
+state 175
+	bloque_sentencias : sentencia_declarativa error END ';' .  (14)
+
+	.  reduce 14
+
+
+state 176
+	bloque_sentencias : sentencia_declarativa error sentencia_compuesta END . ';'  (12)
+
+	';'  shift 216
+	.  error
+
+
+state 177
+	bloque_sentencias : sentencia_declarativa BEGIN error ';' .  (15)
+
+	.  reduce 15
+
+
+state 178
+	bloque_sentencias : sentencia_declarativa BEGIN END error .  (16)
+
+	.  reduce 16
+
+
+state 179
+	bloque_sentencias : sentencia_declarativa BEGIN END ';' .  (13)
+
+	.  reduce 13
+
+
+state 180
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta error . ';'  (11)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
+
+	';'  shift 217
+	'('  shift 30
+	.  error
+
+	cond  goto 34
+
+
+state 181
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END . ';'  (9)
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END . error  (10)
+
+	error  shift 218
+	';'  shift 219
+	.  error
+
+
+state 182
+	declaracion_func : tipo FUNC ID $$3 .  (40)
+
+	.  reduce 40
+
+
+state 183
+	parametro : tipo ID .  (42)
+
+	.  reduce 42
+
+
+state 184
+	parametro_func : '(' parametro ')' .  (41)
+
+	.  reduce 41
+
+
+state 185
+	cuerpo_func_error : error sentencia_compuesta . RETURN '(' expresion ')' ';' END  (56)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 42
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	RETURN  shift 220
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 186
+	cuerpo_func : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta . '(' expresion ')' ';' END  (57)
+	cuerpo_func_error : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta . RETURN error expresion ')' ';' END  (59)
+	cuerpo_func_error : BEGIN sentencia_compuesta . RETURN '(' expresion error ';' END  (60)
+	cuerpo_func_error : BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error  (61)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 42
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	RETURN  shift 221
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
+	'('  shift 222
+	.  error
+
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 187
+	declaracion_var : error . lista_var  (32)
+	cuerpo_func_error : sentencia_declarativa error . sentencia_compuesta RETURN '(' expresion ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (62)
+	cuerpo_func_error : sentencia_declarativa error . RETURN '(' expresion ')' ';' END  (67)
+
+	error  shift 28
+	ID  shift 29
 	IF  shift 5
 	PRINT  shift 6
 	RETURN  shift 223
@@ -2582,899 +2294,1625 @@ state 213
 	.  error
 
 	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_compuesta  goto 224
+	sentencia_simple  goto 32
+	lista_var  goto 33
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
-state 214
-	declaracion_var : error . lista_var  (23)
-	cuerpo_func : sentencia_declarativa error . sentencia_compuesta RETURN '(' expresion ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa error . RETURN '(' expresion ')' ';' END  (41)
-	cuerpo_func : sentencia_declarativa error . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (46)
+state 188
+	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN . RETURN '(' expresion ')' ';' END  (45)
+	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN error expresion ')' ';' END  (53)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (63)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (66)
+	cuerpo_func_error : sentencia_declarativa BEGIN . '(' expresion ')' ';' END  (68)
+	cuerpo_func_error : sentencia_declarativa BEGIN . RETURN '(' expresion ')' ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN . RETURN error expresion ')' ';' END  (70)
+	cuerpo_func_error : sentencia_declarativa BEGIN . RETURN '(' expresion error ';' END  (71)
+	cuerpo_func_error : sentencia_declarativa BEGIN . RETURN '(' expresion ')' ';' error  (72)
 
-	error  shift 25
-	ID  shift 26
-	IF  shift 5
-	PRINT  shift 6
-	RETURN  shift 224
-	BREAK  shift 9
-	WHILE  shift 12
-	TRY  shift 13
-	.  error
-
-	bloque_try  goto 15
-	sentencia_compuesta  goto 225
-	sentencia_simple  goto 29
-	lista_var  goto 30
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
-
-
-state 215
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN error expresion ')' ';' END  (33)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion error ';' END  (34)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN . RETURN error expresion ')' ';' END  (42)
-	cuerpo_func : sentencia_declarativa BEGIN . RETURN '(' expresion error ';' END  (43)
-	cuerpo_func : sentencia_declarativa BEGIN . RETURN '(' expresion ')' ';' error  (44)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN . sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (48)
-
-	error  shift 40
+	error  shift 42
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
-	RETURN  shift 226
+	RETURN  shift 225
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
+	'('  shift 226
 	.  error
 
 	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
 	sentencia_compuesta  goto 227
-	sentencia_simple  goto 29
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	sentencia_simple  goto 32
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
-state 216
-	seleccion : error '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF .  (97)
+state 189
+	iteracion : inicio_while cond cuerpo_while $$11 .  (144)
 
-	.  reduce 97
-
-
-state 217
-	seleccion : IF error condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF .  (87)
-
-	.  reduce 87
+	.  reduce 144
 
 
-state 218
-	seleccion : IF '(' condicion error THEN bloque_sentencias ELSE bloque_sentencias ENDIF .  (88)
-
-	.  reduce 88
-
-
-state 219
-	seleccion : IF '(' condicion ')' error bloque_sentencias ELSE bloque_sentencias ENDIF .  (91)
-
-	.  reduce 91
-
-
-state 220
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias error .  (89)
-
-	.  reduce 89
-
-
-state 221
-	seleccion : IF '(' condicion ')' THEN bloque_sentencias ELSE bloque_sentencias ENDIF .  (86)
+state 190
+	parametro_inv : ID .  (86)
 
 	.  reduce 86
 
 
-state 222
-	cuerpo_func : error sentencia_compuesta RETURN . '(' expresion ')' ';' END  (37)
+state 191
+	parametro_inv : CTE .  (88)
 
-	'('  shift 228
+	.  reduce 88
+
+
+state 192
+	parametro_inv : '-' . CTE  (87)
+
+	CTE  shift 228
 	.  error
 
 
-state 223
-	cuerpo_func : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN . error expresion ')' ';' END  (38)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN . '(' expresion error ';' END  (39)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error  (40)
+state 193
+	factor : ID '(' parametro_inv . ')'  (83)
 
-	error  shift 229
-	'('  shift 230
+	')'  shift 229
 	.  error
 
 
-state 224
-	cuerpo_func : sentencia_declarativa error RETURN . '(' expresion ')' ';' END  (41)
+state 194
+	factor : '-' CTE $$6 .  (81)
 
-	'('  shift 231
-	.  error
+	.  reduce 81
 
 
-state 225
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta . RETURN '(' expresion ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (46)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
+state 195
+	expresion : expresion '+' termino .  (73)
+	termino : termino . '*' factor  (76)
+	termino : termino . '/' factor  (77)
 
-	error  shift 40
+	'*'  shift 147
+	'/'  shift 148
+	error  reduce 73
+	"OR"  reduce 73
+	"AND"  reduce 73
+	'>'  reduce 73
+	'<'  reduce 73
+	"DISTINTO"  reduce 73
+	"MAYOR_IGUAL"  reduce 73
+	"MENOR_IGUAL"  reduce 73
+	"IGUAL"  reduce 73
+	'+'  reduce 73
+	'-'  reduce 73
+	';'  reduce 73
+	')'  reduce 73
+
+
+state 196
+	expresion : expresion '-' termino .  (74)
+	termino : termino . '*' factor  (76)
+	termino : termino . '/' factor  (77)
+
+	'*'  shift 147
+	'/'  shift 148
+	error  reduce 74
+	"OR"  reduce 74
+	"AND"  reduce 74
+	'>'  reduce 74
+	'<'  reduce 74
+	"DISTINTO"  reduce 74
+	"MAYOR_IGUAL"  reduce 74
+	"MENOR_IGUAL"  reduce 74
+	"IGUAL"  reduce 74
+	'+'  reduce 74
+	'-'  reduce 74
+	';'  reduce 74
+	')'  reduce 74
+
+
+state 197
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+	condicion : condicion operadores expresion .  (128)
+
+	'+'  shift 135
+	'-'  shift 136
+	"OR"  reduce 128
+	"AND"  reduce 128
+	'>'  reduce 128
+	'<'  reduce 128
+	"DISTINTO"  reduce 128
+	"MAYOR_IGUAL"  reduce 128
+	"MENOR_IGUAL"  reduce 128
+	"IGUAL"  reduce 128
+	')'  reduce 128
+
+
+state 198
+	termino : termino '*' factor .  (76)
+
+	.  reduce 76
+
+
+state 199
+	termino : termino '/' factor .  (77)
+
+	.  reduce 77
+
+
+state 200
+	seleccion : error cond THEN cuerpo_if ENDIF .  (121)
+
+	.  reduce 121
+
+
+state 201
+	cuerpo_if : cuerpo_then ELSE . cuerpo_else  (123)
+
+	error  shift 3
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
-	RETURN  shift 232
+	FUNC  shift 7
+	BEGIN  shift 8
 	BREAK  shift 9
+	ULONG  shift 10
+	DOUBLE  shift 11
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
+	bloque_sentencias  goto 230
 	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_declarativa  goto 17
+	sentencia_simple  goto 18
+	declaracion  goto 19
+	declaracion_var  goto 20
+	func  goto 21
+	tipo  goto 22
+	declaracion_func  goto 23
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	cuerpo_else  goto 231
+	inicio_while  goto 27
 
 
-state 226
-	cuerpo_func : sentencia_declarativa BEGIN RETURN . error expresion ')' ';' END  (42)
-	cuerpo_func : sentencia_declarativa BEGIN RETURN . '(' expresion error ';' END  (43)
-	cuerpo_func : sentencia_declarativa BEGIN RETURN . '(' expresion ')' ';' error  (44)
+state 202
+	sentencia_simple : ID ASIG expresion ';' $$7 .  (92)
 
-	error  shift 233
+	.  reduce 92
+
+
+state 203
+	seleccion : IF error THEN cuerpo_if ENDIF .  (122)
+
+	.  reduce 122
+
+
+state 204
+	seleccion : IF cond error cuerpo_if ENDIF .  (119)
+
+	.  reduce 119
+
+
+state 205
+	seleccion : IF cond THEN cuerpo_if error .  (120)
+
+	.  reduce 120
+
+
+state 206
+	seleccion : IF cond THEN cuerpo_if ENDIF . $$9  (118)
+	$$9 : .  (117)
+
+	.  reduce 117
+
+	$$9  goto 232
+
+
+state 207
+	print : PRINT '(' CADENA ')' $$10 .  (139)
+
+	.  reduce 139
+
+
+state 208
+	sentencia_try : ID error expresion ';' .  (108)
+
+	.  reduce 108
+
+
+state 209
+	sentencia_try : ID ASIG expresion error .  (109)
+
+	.  reduce 109
+
+
+state 210
+	sentencia_try : ID ASIG expresion ';' . $$8  (107)
+	$$8 : .  (106)
+
+	.  reduce 106
+
+	$$8  goto 233
+
+
+state 211
+	bloque_catch : error BEGIN sentencia_compuesta_try END .  (6)
+
+	.  reduce 6
+
+
+state 212
+	sentencia_compuesta_try : sentencia_compuesta_try sentencia_try .  (104)
+
+	.  reduce 104
+
+
+state 213
+	bloque_catch : CATCH error sentencia_compuesta_try END .  (8)
+
+	.  reduce 8
+
+
+state 214
+	bloque_catch : CATCH BEGIN sentencia_compuesta_try error .  (7)
+	seleccion : error . cond THEN cuerpo_if ENDIF  (121)
+	iteracion : error . cond cuerpo_while  (145)
+
+	'('  shift 30
+	error  reduce 7
+	';'  reduce 7
+
+	cond  goto 34
+
+
+state 215
+	bloque_catch : CATCH BEGIN sentencia_compuesta_try END .  (5)
+
+	.  reduce 5
+
+
+state 216
+	bloque_sentencias : sentencia_declarativa error sentencia_compuesta END ';' .  (12)
+
+	.  reduce 12
+
+
+state 217
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta error ';' .  (11)
+
+	.  reduce 11
+
+
+state 218
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END error .  (10)
+
+	.  reduce 10
+
+
+state 219
+	bloque_sentencias : sentencia_declarativa BEGIN sentencia_compuesta END ';' .  (9)
+
+	.  reduce 9
+
+
+state 220
+	cuerpo_func_error : error sentencia_compuesta RETURN . '(' expresion ')' ';' END  (56)
+
 	'('  shift 234
 	.  error
 
 
-state 227
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN error expresion ')' ';' END  (33)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion error ';' END  (34)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (48)
-	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (61)
+state 221
+	cuerpo_func : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN . error expresion ')' ';' END  (59)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN . '(' expresion error ';' END  (60)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error  (61)
 
-	error  shift 40
+	error  shift 235
+	'('  shift 236
+	.  error
+
+
+state 222
+	cuerpo_func_error : BEGIN sentencia_compuesta '(' . expresion ')' ';' END  (57)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 237
+	termino  goto 81
+	factor  goto 82
+
+
+state 223
+	cuerpo_func_error : sentencia_declarativa error RETURN . '(' expresion ')' ';' END  (67)
+
+	'('  shift 238
+	.  error
+
+
+state 224
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta . RETURN '(' expresion ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (62)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
+
+	error  shift 42
 	ID  shift 4
 	IF  shift 5
 	PRINT  shift 6
-	RETURN  shift 235
+	RETURN  shift 239
 	BREAK  shift 9
 	WHILE  shift 12
 	TRY  shift 13
 	.  error
 
 	bloque_try  goto 15
-	sentencia_simple  goto 74
-	seleccion  goto 22
-	print  goto 23
-	iteracion  goto 24
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
 
 
-state 228
-	cuerpo_func : error sentencia_compuesta RETURN '(' . expresion ')' ';' END  (37)
+state 225
+	cuerpo_func : sentencia_declarativa BEGIN RETURN . '(' expresion ')' ';' END  (45)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN . '(' expresion ')' ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN . error expresion ')' ';' END  (70)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN . '(' expresion error ';' END  (71)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN . '(' expresion ')' ';' error  (72)
 
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 236
-	termino  goto 71
-	factor  goto 72
-
-
-state 229
-	cuerpo_func : BEGIN sentencia_compuesta RETURN error . expresion ')' ';' END  (38)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 237
-	termino  goto 71
-	factor  goto 72
-
-
-state 230
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' . expresion error ';' END  (39)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error  (40)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 238
-	termino  goto 71
-	factor  goto 72
-
-
-state 231
-	cuerpo_func : sentencia_declarativa error RETURN '(' . expresion ')' ';' END  (41)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 239
-	termino  goto 71
-	factor  goto 72
-
-
-state 232
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN . '(' expresion ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (46)
-
-	'('  shift 240
+	error  shift 240
+	'('  shift 241
 	.  error
 
 
-state 233
-	cuerpo_func : sentencia_declarativa BEGIN RETURN error . expresion ')' ';' END  (42)
+state 226
+	cuerpo_func_error : sentencia_declarativa BEGIN '(' . expresion ')' ';' END  (68)
 
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 241
-	termino  goto 71
-	factor  goto 72
-
-
-state 234
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' . expresion error ';' END  (43)
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' . expresion ')' ';' error  (44)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
 
 	expresion  goto 242
-	termino  goto 71
-	factor  goto 72
+	termino  goto 81
+	factor  goto 82
 
 
-state 235
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . error expresion ')' ';' END  (33)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion error ';' END  (34)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (48)
+state 227
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN error expresion ')' ';' END  (53)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (63)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta . RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (66)
+	sentencia_compuesta : sentencia_compuesta . sentencia_simple  (89)
 
-	error  shift 243
+	error  shift 42
+	ID  shift 4
+	IF  shift 5
+	PRINT  shift 6
+	RETURN  shift 243
+	BREAK  shift 9
+	WHILE  shift 12
+	TRY  shift 13
 	'('  shift 244
 	.  error
 
+	bloque_try  goto 15
+	bloque_try_comienzo  goto 16
+	sentencia_simple  goto 84
+	seleccion  goto 24
+	print  goto 25
+	iteracion  goto 26
+	inicio_while  goto 27
+
+
+state 228
+	parametro_inv : '-' CTE .  (87)
+
+	.  reduce 87
+
+
+state 229
+	factor : ID '(' parametro_inv ')' .  (83)
+
+	.  reduce 83
+
+
+state 230
+	cuerpo_else : bloque_sentencias .  (126)
+
+	.  reduce 126
+
+
+state 231
+	cuerpo_if : cuerpo_then ELSE cuerpo_else .  (123)
+
+	.  reduce 123
+
+
+state 232
+	seleccion : IF cond THEN cuerpo_if ENDIF $$9 .  (118)
+
+	.  reduce 118
+
+
+state 233
+	sentencia_try : ID ASIG expresion ';' $$8 .  (107)
+
+	.  reduce 107
+
+
+state 234
+	cuerpo_func_error : error sentencia_compuesta RETURN '(' . expresion ')' ';' END  (56)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 245
+	termino  goto 81
+	factor  goto 82
+
+
+state 235
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN error . expresion ')' ';' END  (59)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 246
+	termino  goto 81
+	factor  goto 82
+
 
 state 236
-	cuerpo_func : error sentencia_compuesta RETURN '(' expresion . ')' ';' END  (37)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' . expresion error ';' END  (60)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error  (61)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 245
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
+
+	expresion  goto 247
+	termino  goto 81
+	factor  goto 82
 
 
 state 237
-	cuerpo_func : BEGIN sentencia_compuesta RETURN error expresion . ')' ';' END  (38)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func_error : BEGIN sentencia_compuesta '(' expresion . ')' ';' END  (57)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 246
-	.  error
-
-
-state 238
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion . error ';' END  (39)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error  (40)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
-
-	error  shift 247
-	'+'  shift 113
-	'-'  shift 114
+	'+'  shift 135
+	'-'  shift 136
 	')'  shift 248
 	.  error
 
 
-state 239
-	cuerpo_func : sentencia_declarativa error RETURN '(' expresion . ')' ';' END  (41)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+state 238
+	cuerpo_func_error : sentencia_declarativa error RETURN '(' . expresion ')' ';' END  (67)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 249
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 249
+	termino  goto 81
+	factor  goto 82
+
+
+state 239
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN . '(' expresion ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END  (62)
+
+	'('  shift 250
 	.  error
 
 
 state 240
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' . expresion ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END  (46)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN error . expresion ')' ';' END  (70)
 
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
 
-	expresion  goto 250
-	termino  goto 71
-	factor  goto 72
+	expresion  goto 251
+	termino  goto 81
+	factor  goto 82
 
 
 state 241
-	cuerpo_func : sentencia_declarativa BEGIN RETURN error expresion . ')' ';' END  (42)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' . expresion ')' ';' END  (45)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' . expresion ')' ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' . expresion error ';' END  (71)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' . expresion ')' ';' error  (72)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 251
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
+
+	expresion  goto 252
+	termino  goto 81
+	factor  goto 82
 
 
 state 242
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion . error ';' END  (43)
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion . ')' ';' error  (44)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func_error : sentencia_declarativa BEGIN '(' expresion . ')' ';' END  (68)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	error  shift 252
-	'+'  shift 113
-	'-'  shift 114
+	'+'  shift 135
+	'-'  shift 136
 	')'  shift 253
 	.  error
 
 
 state 243
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN error . expresion ')' ';' END  (33)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . error expresion ')' ';' END  (53)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN . '(' expresion ')' ';' error ':' '(' condicion ')' ';' END  (66)
 
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
+	error  shift 254
+	'('  shift 255
 	.  error
-
-	expresion  goto 254
-	termino  goto 71
-	factor  goto 72
 
 
 state 244
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion error ';' END  (34)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error ':' '(' condicion ')' ';' END  (48)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END  (63)
 
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
 
-	expresion  goto 255
-	termino  goto 71
-	factor  goto 72
+	expresion  goto 256
+	termino  goto 81
+	factor  goto 82
 
 
 state 245
-	cuerpo_func : error sentencia_compuesta RETURN '(' expresion ')' . ';' END  (37)
+	cuerpo_func_error : error sentencia_compuesta RETURN '(' expresion . ')' ';' END  (56)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 256
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 257
 	.  error
 
 
 state 246
-	cuerpo_func : BEGIN sentencia_compuesta RETURN error expresion ')' . ';' END  (38)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN error expresion . ')' ';' END  (59)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 257
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 258
 	.  error
 
 
 state 247
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion error . ';' END  (39)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion . error ';' END  (60)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error  (61)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 258
+	error  shift 259
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 260
 	.  error
 
 
 state 248
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error  (40)
+	cuerpo_func_error : BEGIN sentencia_compuesta '(' expresion ')' . ';' END  (57)
 
-	';'  shift 259
+	';'  shift 261
 	.  error
 
 
 state 249
-	cuerpo_func : sentencia_declarativa error RETURN '(' expresion ')' . ';' END  (41)
+	cuerpo_func_error : sentencia_declarativa error RETURN '(' expresion . ')' ';' END  (67)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 260
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 262
 	.  error
 
 
 state 250
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion . ')' ';' END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END  (46)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' . expresion ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END  (62)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 261
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
+
+	expresion  goto 263
+	termino  goto 81
+	factor  goto 82
 
 
 state 251
-	cuerpo_func : sentencia_declarativa BEGIN RETURN error expresion ')' . ';' END  (42)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN error expresion . ')' ';' END  (70)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 262
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 264
 	.  error
 
 
 state 252
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion error . ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion . ')' ';' END  (45)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion . ')' ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion . error ';' END  (71)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion . ')' ';' error  (72)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	';'  shift 263
+	error  shift 265
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 266
 	.  error
 
 
 state 253
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' . ';' error  (44)
+	cuerpo_func_error : sentencia_declarativa BEGIN '(' expresion ')' . ';' END  (68)
 
-	';'  shift 264
+	';'  shift 267
 	.  error
 
 
 state 254
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion . ')' ';' END  (33)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN error . expresion ')' ';' END  (53)
 
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 265
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
+
+	expresion  goto 268
+	termino  goto 81
+	factor  goto 82
 
 
 state 255
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . error ';' END  (34)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error ':' '(' condicion ')' ';' END  (48)
-	expresion : expresion . '+' termino  (49)
-	expresion : expresion . '-' termino  (50)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' . expresion ')' ';' error ':' '(' condicion ')' ';' END  (66)
 
-	error  shift 266
-	'+'  shift 113
-	'-'  shift 114
-	')'  shift 267
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
 	.  error
+
+	expresion  goto 269
+	termino  goto 81
+	factor  goto 82
 
 
 state 256
-	cuerpo_func : error sentencia_compuesta RETURN '(' expresion ')' ';' . END  (37)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END  (63)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	END  shift 268
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 270
 	.  error
 
 
 state 257
-	cuerpo_func : BEGIN sentencia_compuesta RETURN error expresion ')' ';' . END  (38)
+	cuerpo_func_error : error sentencia_compuesta RETURN '(' expresion ')' . ';' END  (56)
 
-	END  shift 269
+	';'  shift 271
 	.  error
 
 
 state 258
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion error ';' . END  (39)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN error expresion ')' . ';' END  (59)
 
-	END  shift 270
+	';'  shift 272
 	.  error
 
 
 state 259
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . END  (36)
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error  (40)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion error . ';' END  (60)
 
-	error  shift 271
-	END  shift 272
+	';'  shift 273
 	.  error
 
 
 state 260
-	cuerpo_func : sentencia_declarativa error RETURN '(' expresion ')' ';' . END  (41)
-
-	END  shift 273
-	.  error
-
-
-state 261
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' . ';' END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END  (46)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error  (61)
 
 	';'  shift 274
 	.  error
 
 
-state 262
-	cuerpo_func : sentencia_declarativa BEGIN RETURN error expresion ')' ';' . END  (42)
+state 261
+	cuerpo_func_error : BEGIN sentencia_compuesta '(' expresion ')' ';' . END  (57)
 
 	END  shift 275
 	.  error
 
 
-state 263
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion error ';' . END  (43)
+state 262
+	cuerpo_func_error : sentencia_declarativa error RETURN '(' expresion ')' . ';' END  (67)
 
-	END  shift 276
+	';'  shift 276
+	.  error
+
+
+state 263
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion . ')' ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END  (62)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 277
 	.  error
 
 
 state 264
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' . error  (44)
-
-	error  shift 277
-	.  error
-
-
-state 265
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' . ';' END  (33)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN error expresion ')' . ';' END  (70)
 
 	';'  shift 278
 	.  error
 
 
-state 266
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error . ';' END  (34)
+state 265
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion error . ';' END  (71)
 
 	';'  shift 279
 	.  error
 
 
-state 267
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error ':' '(' condicion ')' ';' END  (48)
+state 266
+	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' . ';' END  (45)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' . ';' error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' . ';' error  (72)
 
 	';'  shift 280
 	.  error
 
 
-state 268
-	cuerpo_func : error sentencia_compuesta RETURN '(' expresion ')' ';' END .  (37)
+state 267
+	cuerpo_func_error : sentencia_declarativa BEGIN '(' expresion ')' ';' . END  (68)
 
-	.  reduce 37
+	END  shift 281
+	.  error
+
+
+state 268
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion . ')' ';' END  (53)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
+
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 282
+	.  error
 
 
 state 269
-	cuerpo_func : BEGIN sentencia_compuesta RETURN error expresion ')' ';' END .  (38)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . error ';' END  (54)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion . ')' ';' error ':' '(' condicion ')' ';' END  (66)
+	expresion : expresion . '+' termino  (73)
+	expresion : expresion . '-' termino  (74)
 
-	.  reduce 38
+	error  shift 283
+	'+'  shift 135
+	'-'  shift 136
+	')'  shift 284
+	.  error
 
 
 state 270
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion error ';' END .  (39)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END  (63)
 
-	.  reduce 39
+	';'  shift 285
+	.  error
 
 
 state 271
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error .  (40)
+	cuerpo_func_error : error sentencia_compuesta RETURN '(' expresion ')' ';' . END  (56)
 
-	.  reduce 40
+	END  shift 286
+	.  error
 
 
 state 272
-	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END .  (36)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN error expresion ')' ';' . END  (59)
 
-	.  reduce 36
+	END  shift 287
+	.  error
 
 
 state 273
-	cuerpo_func : sentencia_declarativa error RETURN '(' expresion ')' ';' END .  (41)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion error ';' . END  (60)
 
-	.  reduce 41
+	END  shift 288
+	.  error
 
 
 state 274
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' . END  (32)
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END  (46)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . END  (44)
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END $$5  (49)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error  (61)
 
-	END  shift 281
-	POST  shift 282
+	error  shift 289
+	END  shift 290
+	POST  shift 291
 	.  error
 
 
 state 275
-	cuerpo_func : sentencia_declarativa BEGIN RETURN error expresion ')' ';' END .  (42)
+	cuerpo_func_error : BEGIN sentencia_compuesta '(' expresion ')' ';' END .  (57)
 
-	.  reduce 42
+	.  reduce 57
 
 
 state 276
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion error ';' END .  (43)
+	cuerpo_func_error : sentencia_declarativa error RETURN '(' expresion ')' ';' . END  (67)
 
-	.  reduce 43
+	END  shift 292
+	.  error
 
 
 state 277
-	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error .  (44)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' . ';' END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END  (62)
 
-	.  reduce 44
+	';'  shift 293
+	.  error
 
 
 state 278
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' . END  (33)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN error expresion ')' ';' . END  (70)
 
-	END  shift 283
+	END  shift 294
 	.  error
 
 
 state 279
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' . END  (34)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion error ';' . END  (71)
 
-	END  shift 284
+	END  shift 295
 	.  error
 
 
 state 280
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . END  (31)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' error  (47)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error ':' '(' condicion ')' ';' END  (48)
+	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' . END  (45)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' . error END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' . error  (72)
 
-	error  shift 285
-	END  shift 286
-	POST  shift 287
+	error  shift 296
+	END  shift 297
 	.  error
 
 
 state 281
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' END .  (32)
+	cuerpo_func_error : sentencia_declarativa BEGIN '(' expresion ')' ';' END .  (68)
 
-	.  reduce 32
+	.  reduce 68
 
 
 state 282
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END  (46)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' . ';' END  (53)
 
-	':'  shift 288
+	';'  shift 298
 	.  error
 
 
 state 283
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' END .  (33)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error . ';' END  (54)
 
-	.  reduce 33
+	';'  shift 299
+	.  error
 
 
 state 284
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' END .  (34)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . error ';' POST ':' '(' condicion ')' ';' END  (64)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' . ';' error ':' '(' condicion ')' ';' END  (66)
 
-	.  reduce 34
-
-
-state 285
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error .  (35)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error . ':' '(' condicion ')' ';' END  (48)
-
-	':'  shift 289
-	error  reduce 35
-	';'  reduce 35
-
-
-state 286
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END .  (31)
-
-	.  reduce 31
-
-
-state 287
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' error  (47)
-
-	':'  shift 290
-	.  error
-
-
-state 288
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END  (46)
-
-	'('  shift 291
-	.  error
-
-
-state 289
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' . '(' condicion ')' ';' END  (48)
-
-	'('  shift 292
-	.  error
-
-
-state 290
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' error  (47)
-
-	'('  shift 293
-	.  error
-
-
-state 291
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END  (46)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 294
-	termino  goto 71
-	factor  goto 72
-
-
-state 292
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' . condicion ')' ';' END  (48)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 295
-	termino  goto 71
-	factor  goto 72
-
-
-state 293
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' error  (47)
-
-	ID  shift 65
-	CTE  shift 66
-	ERROR  shift 67
-	'-'  shift 68
-	.  error
-
-	expresion  goto 69
-	condicion  goto 296
-	termino  goto 71
-	factor  goto 72
-
-
-state 294
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END  (46)
-
-	')'  shift 297
-	.  error
-
-
-state 295
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion . ')' ';' END  (48)
-
-	')'  shift 298
-	.  error
-
-
-state 296
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' error  (47)
-
-	')'  shift 299
-	.  error
-
-
-state 297
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END  (46)
-
-	';'  shift 300
-	.  error
-
-
-state 298
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' . ';' END  (48)
-
+	error  shift 300
 	';'  shift 301
 	.  error
 
 
-state 299
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' error  (47)
+state 285
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END  (63)
 
-	';'  shift 302
+	POST  shift 302
 	.  error
 
 
-state 300
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END  (46)
+state 286
+	cuerpo_func_error : error sentencia_compuesta RETURN '(' expresion ')' ';' END .  (56)
+
+	.  reduce 56
+
+
+state 287
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN error expresion ')' ';' END .  (59)
+
+	.  reduce 59
+
+
+state 288
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion error ';' END .  (60)
+
+	.  reduce 60
+
+
+state 289
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error . END  (58)
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error .  (61)
 
 	END  shift 303
+	error  reduce 61
+	';'  reduce 61
+
+
+state 290
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END .  (44)
+
+	.  reduce 44
+
+
+state 291
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END $$5  (49)
+
+	':'  shift 304
 	.  error
 
 
-state 301
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' . END  (48)
+state 292
+	cuerpo_func_error : sentencia_declarativa error RETURN '(' expresion ')' ';' END .  (67)
 
-	END  shift 304
+	.  reduce 67
+
+
+state 293
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' . END  (51)
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END  (62)
+
+	END  shift 305
+	POST  shift 306
 	.  error
 
 
-state 302
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END  (45)
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . error  (47)
+state 294
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN error expresion ')' ';' END .  (70)
 
-	error  shift 305
-	END  shift 306
-	.  error
+	.  reduce 70
 
 
-state 303
-	cuerpo_func : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END .  (46)
+state 295
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion error ';' END .  (71)
 
-	.  reduce 46
-
-
-state 304
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END .  (48)
-
-	.  reduce 48
+	.  reduce 71
 
 
-state 305
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error .  (47)
+state 296
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error . END  (69)
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error .  (72)
 
-	.  reduce 47
+	END  shift 307
+	error  reduce 72
+	';'  reduce 72
 
 
-state 306
-	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END .  (45)
+state 297
+	cuerpo_func : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' END .  (45)
 
 	.  reduce 45
 
 
-41 terminals, 24 nonterminals
-117 grammar rules, 307 states
+state 298
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' . END  (53)
+
+	END  shift 308
+	.  error
+
+
+state 299
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' . END  (54)
+
+	END  shift 309
+	.  error
+
+
+state 300
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error . ';' POST ':' '(' condicion ')' ';' END  (64)
+
+	';'  shift 310
+	.  error
+
+
+state 301
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . END  (43)
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . POST ':' '(' condicion ')' ';' error  (65)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' . error ':' '(' condicion ')' ';' END  (66)
+
+	error  shift 311
+	END  shift 312
+	POST  shift 313
+	.  error
+
+
+state 302
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END  (63)
+
+	':'  shift 314
+	.  error
+
+
+state 303
+	cuerpo_func_error : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error END .  (58)
+
+	.  reduce 58
+
+
+state 304
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END $$5  (49)
+
+	'('  shift 315
+	.  error
+
+
+state 305
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' END .  (51)
+
+	.  reduce 51
+
+
+state 306
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END  (62)
+
+	':'  shift 316
+	.  error
+
+
+state 307
+	cuerpo_func_error : sentencia_declarativa BEGIN RETURN '(' expresion ')' ';' error END .  (69)
+
+	.  reduce 69
+
+
+state 308
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN error expresion ')' ';' END .  (53)
+
+	.  reduce 53
+
+
+state 309
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion error ';' END .  (54)
+
+	.  reduce 54
+
+
+state 310
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' . POST ':' '(' condicion ')' ';' END  (64)
+
+	POST  shift 317
+	.  error
+
+
+state 311
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error . END  (52)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error .  (55)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error . ':' '(' condicion ')' ';' END  (66)
+
+	END  shift 318
+	':'  shift 319
+	error  reduce 55
+	';'  reduce 55
+
+
+state 312
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' END .  (43)
+
+	.  reduce 43
+
+
+state 313
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST . ':' '(' condicion ')' ';' error  (65)
+
+	':'  shift 320
+	.  error
+
+
+state 314
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END  (63)
+
+	'('  shift 321
+	.  error
+
+
+state 315
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END $$5  (49)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 322
+	termino  goto 81
+	factor  goto 82
+
+
+state 316
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END  (62)
+
+	'('  shift 323
+	.  error
+
+
+state 317
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST . ':' '(' condicion ')' ';' END  (64)
+
+	':'  shift 324
+	.  error
+
+
+state 318
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error END .  (52)
+
+	.  reduce 52
+
+
+state 319
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' . '(' condicion ')' ';' END  (66)
+
+	'('  shift 325
+	.  error
+
+
+state 320
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' . '(' condicion ')' ';' error  (65)
+
+	'('  shift 326
+	.  error
+
+
+state 321
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END  (63)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 327
+	termino  goto 81
+	factor  goto 82
+
+
+state 322
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END $$5  (49)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 328
+	.  error
+
+	operadores  goto 146
+
+
+state 323
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END  (62)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 329
+	termino  goto 81
+	factor  goto 82
+
+
+state 324
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' . '(' condicion ')' ';' END  (64)
+
+	'('  shift 330
+	.  error
+
+
+state 325
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' . condicion ')' ';' END  (66)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 331
+	termino  goto 81
+	factor  goto 82
+
+
+state 326
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' . condicion ')' ';' error  (65)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 332
+	termino  goto 81
+	factor  goto 82
+
+
+state 327
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END  (63)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 333
+	.  error
+
+	operadores  goto 146
+
+
+state 328
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END $$5  (49)
+
+	';'  shift 334
+	.  error
+
+
+state 329
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END  (62)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 335
+	.  error
+
+	operadores  goto 146
+
+
+state 330
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' . condicion ')' ';' END  (64)
+
+	ID  shift 75
+	CTE  shift 76
+	ERROR  shift 77
+	'-'  shift 78
+	.  error
+
+	expresion  goto 79
+	condicion  goto 336
+	termino  goto 81
+	factor  goto 82
+
+
+state 331
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion . ')' ';' END  (66)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 337
+	.  error
+
+	operadores  goto 146
+
+
+state 332
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion . ')' ';' error  (65)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 338
+	.  error
+
+	operadores  goto 146
+
+
+state 333
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END  (63)
+
+	';'  shift 339
+	.  error
+
+
+state 334
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END $$5  (49)
+
+	END  shift 340
+	.  error
+
+
+state 335
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END  (62)
+
+	';'  shift 341
+	.  error
+
+
+state 336
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion . ')' ';' END  (64)
+	condicion : condicion . operadores expresion  (128)
+
+	"OR"  shift 137
+	"AND"  shift 138
+	'>'  shift 139
+	'<'  shift 140
+	"DISTINTO"  shift 141
+	"MAYOR_IGUAL"  shift 142
+	"MENOR_IGUAL"  shift 143
+	"IGUAL"  shift 144
+	')'  shift 342
+	.  error
+
+	operadores  goto 146
+
+
+state 337
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' . ';' END  (66)
+
+	';'  shift 343
+	.  error
+
+
+state 338
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' . ';' error  (65)
+
+	';'  shift 344
+	.  error
+
+
+state 339
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END  (63)
+
+	END  shift 345
+	.  error
+
+
+state 340
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END . $$5  (49)
+	$$5 : .  (48)
+
+	.  reduce 48
+
+	$$5  goto 346
+
+
+state 341
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END  (62)
+
+	END  shift 347
+	.  error
+
+
+state 342
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' . ';' END  (64)
+
+	';'  shift 348
+	.  error
+
+
+state 343
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' . END  (66)
+
+	END  shift 349
+	.  error
+
+
+state 344
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . END $$4  (47)
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' . error  (65)
+
+	error  shift 350
+	END  shift 351
+	.  error
+
+
+state 345
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END .  (63)
+
+	.  reduce 63
+
+
+state 346
+	cuerpo_func : BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$5 .  (49)
+
+	.  reduce 49
+
+
+state 347
+	cuerpo_func_error : sentencia_declarativa error sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END .  (62)
+
+	.  reduce 62
+
+
+state 348
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' . END  (64)
+
+	END  shift 352
+	.  error
+
+
+state 349
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' error ':' '(' condicion ')' ';' END .  (66)
+
+	.  reduce 66
+
+
+state 350
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' error .  (65)
+
+	.  reduce 65
+
+
+state 351
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END . $$4  (47)
+	$$4 : .  (46)
+
+	.  reduce 46
+
+	$$4  goto 353
+
+
+state 352
+	cuerpo_func_error : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' error ';' POST ':' '(' condicion ')' ';' END .  (64)
+
+	.  reduce 64
+
+
+state 353
+	cuerpo_func : sentencia_declarativa BEGIN sentencia_compuesta RETURN '(' expresion ')' ';' POST ':' '(' condicion ')' ';' END $$4 .  (47)
+
+	.  reduce 47
+
+
+41 terminals, 47 nonterminals
+150 grammar rules, 354 states

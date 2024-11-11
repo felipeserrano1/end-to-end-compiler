@@ -1,0 +1,11 @@
+Alcance
+    ULONG x;
+    ULONG FUNC suma(DOUBLE y)
+        ULONG n;
+        BEGIN
+            n := 10;
+            RETURN(n);
+        END;
+BEGIN
+    x := n; // n esta declarada dentro de la funcion, error y no genera asm //
+END;

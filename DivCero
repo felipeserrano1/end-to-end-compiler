@@ -1,0 +1,5 @@
+DivCero
+ULONG n;  
+BEGIN  
+    n := 10/0;
+END;

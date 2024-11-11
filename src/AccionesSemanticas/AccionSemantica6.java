@@ -14,7 +14,6 @@ public class AccionSemantica6 extends AccionSemantica {
     public TokenLexema accion(char c) {
         contenido.append(c);
         incrementarIndice();
-        System.out.println("Comentario " + contenido);
         return null;
     }
 }

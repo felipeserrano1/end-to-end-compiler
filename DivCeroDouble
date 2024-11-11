@@ -1,0 +1,8 @@
+DivCero
+DOUBLE x,y,z;
+BEGIN
+    y := 10.0;
+    z := 0.0;
+    x := y/z;
+END;
+

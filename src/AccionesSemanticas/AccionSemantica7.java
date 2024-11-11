@@ -12,7 +12,6 @@ public class AccionSemantica7 extends AccionSemantica {
     @Override
     public TokenLexema accion(char c) {
         this.tipo = contenido.toString();
-        System.out.println(contenido);
         return new TokenLexema(-1);
     }
 }

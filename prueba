@@ -1,0 +1,5 @@
+prueba
+    ULONG x;
+BEGIN
+    x := x + 1;
+END;

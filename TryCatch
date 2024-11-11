@@ -1,0 +1,37 @@
+TryCatch
+    ULONG z,w;
+    DOUBLE x, y;
+    ULONG FUNC prueba(DOUBLE i)
+        ULONG e;
+        BEGIN
+            e := 1;
+            RETURN (e);
+            POST:(e > 10);
+        END;
+
+
+    ULONG FUNC contador(ULONG j)
+        ULONG w;
+        BEGIN
+            w := j + 1;
+            RETURN(w);
+            POST:(w == 10);
+        END;
+
+BEGIN
+    TRY
+        z := prueba(x);
+    CATCH
+        BEGIN
+            PRINT(%entro al catch%);
+        END;
+
+    w := 9;
+	TRY
+	    z := contador(w);
+	CATCH
+	    BEGIN
+	        PRINT(%entro al catch%);
+	    END;
+    PRINT(% no entro al catch%);
+END;
